@@ -1,0 +1,52 @@
+/* page nation */
+.list-pagenation {
+	padding: 10px 0;
+	text-align: center;
+}
+.list-pagenation img {
+	vertical-align: top;
+	width: auto;
+}
+.list-pagenation li {
+	display: inline-block;
+	vertical-align: bottom;
+	height: 24px;
+	margin: 0 3px;
+	cursor: pointer;
+	border-radius: 5px;
+}
+.list-pagenation li:not(.arrow) {
+	min-width: 24px;
+	padding: 0 5px;
+	font-size: 18px;
+	line-height: 24px;
+	/*background: #4959ec;*/
+}
+.list-pagenation .on:not(.arrow) {
+	color: #fff;
+	background: #1F3BB3;
+}
+.list-pagenation li:hover {
+	color: #fff;
+	background: #1F3BB3;
+}
+.list-pagenation li:hover a {
+	color: inherit;
+}
+a{text-decoration:none;color:inherit;}
+a[href^="tel"]{cursor:default;}
+
+select {
+	width: 200px;
+	padding: .8em .5em;
+	border: 1px solid #999;
+	font-family: inherit;
+	background: url('/assets/images/arrow.jpg') no-repeat 95% 50%;
+	border-radius: 0px;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+}
+select::-ms-expand {
+	display: none;
+}

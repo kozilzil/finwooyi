@@ -1,0 +1,212 @@
+{
+  "common" : {
+	"before" : {
+	  "header_css" : [],
+	  "header_js" : [],
+	  "footer_css" : [
+		{
+		  "href": "/assets/css/common.css"
+		}
+	  ],
+	  "footer_js" : []
+	},
+	"after" : {
+	  "header_css" : [],
+	  "header_js" : [],
+	  "footer_css" : [],
+	  "footer_js" : []
+	}
+  },
+  "method" : {
+	"account": {
+	  "index": {
+		"header_css": [],
+		"header_js": [
+		  {
+			"src": "/assets/js/account/index.js",
+			"data": ""
+		  }
+		],
+		"footer_css": [],
+		"footer_js": []
+	  }
+	},
+	"main"	: {
+	  "index": {
+		"header_css": [],
+		"header_js": [],
+		"footer_css": [],
+		"footer_js": []
+	  }
+	},
+	"management" : {
+	  "user": {
+		"header_css": [],
+		"header_js": [],
+		"footer_css": [],
+		"footer_js": []
+	  },
+	  "user_write": {
+		"header_css": [],
+		"header_js": [],
+		"footer_css": [],
+		"footer_js": []
+	  }
+	},
+	"offering" : {
+	  "write": {
+		"header_css": [],
+		"header_js": [],
+		"footer_css": [
+		  {
+			"href": "/assets/css/offering/write.css"
+		  }
+		],
+		"footer_js": [
+		  {
+			"src": "/assets/js/offering/input/table.js",
+			"data": ""
+		  }
+		]
+	  },
+	  "coefficient": {
+		"header_css": [],
+		"header_js": [],
+		"footer_css": [],
+		"footer_js": [
+		  {
+			"src": "/assets/js/offering/coefficient/table.js",
+			"data": ""
+		  }
+		]
+	  },
+	  "total": {
+		"header_css": [],
+		"header_js": [],
+		"footer_css": [],
+		"footer_js": [
+		  {
+			"src": "/assets/js/offering/total/table.js",
+			"data": ""
+		  }
+		]
+	  },
+	  "registrants": {
+		"header_css": [],
+		"header_js": [],
+		"footer_css": [],
+		"footer_js": [
+		  {
+			"src": "/assets/js/offering/registrants/table.js",
+			"data": ""
+		  }
+		]
+	  }
+	},
+	"expense" : {
+	  "write": {
+		"header_css": [],
+		"header_js": [],
+		"footer_css": [],
+		"footer_js": [
+		  {
+			"src": "/assets/js/expense/input/table.js",
+			"data": ""
+		  }
+		]
+	  },
+	  "fixed": {
+		"header_css": [],
+		"header_js": [],
+		"footer_css": [],
+		"footer_js": [
+		  {
+			"src": "/assets/js/expense/fixed/table.js",
+			"data": ""
+		  }
+		]
+	  },
+	  "coefficient": {
+		"header_css": [],
+		"header_js": [],
+		"footer_css": [],
+		"footer_js": [
+		  {
+			"src": "/assets/js/expense/coefficient/table.js",
+			"data": ""
+		  }
+		]
+	  }
+	},
+	"search" : {
+	  "total": {
+		"header_css": [],
+		"header_js": [],
+		"footer_css": [],
+		"footer_js": [
+		  {
+			"src": "/assets/js/search/total/table.js",
+			"data": ""
+		  }
+		]
+	  },
+	  "income": {
+		"header_css": [],
+		"header_js": [],
+		"footer_css": [],
+		"footer_js": [
+		  {
+			"src": "/assets/js/search/income/table.js",
+			"data": ""
+		  }
+		]
+	  },
+	  "expense": {
+		"header_css": [],
+		"header_js": [],
+		"footer_css": [],
+		"footer_js": [
+		  {
+			"src": "/assets/js/search/expense/table.js",
+			"data": ""
+		  }
+		]
+	  },
+	  "donation": {
+		"header_css": [],
+		"header_js": [],
+		"footer_css": [],
+		"footer_js": [
+		  {
+			"src": "/assets/js/search/donation/table.js",
+			"data": ""
+		  }
+		]
+	  },
+	  "donation_detail": {
+		"header_css": [],
+		"header_js": [],
+		"footer_css": [],
+		"footer_js": [
+		  {
+			"src": "/assets/js/search/donation/detail.js",
+			"data": ""
+		  }
+		]
+	  }
+	},
+	"barcode" : {
+	  "check": {
+		"header_css": [],
+		"header_js": [],
+		"footer_css": [],
+		"footer_js": [
+		  {
+			"src": "/assets/js/barcode/check/table.js",
+			"data": ""
+		  }
+		]
+	  }
+	}
+  }
+}
