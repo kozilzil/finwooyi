@@ -23,6 +23,8 @@ class Expense extends MY_Controller {
 		$this->setAssets('expense', 'write');
 		$this->setAfterAssets();
 
+		$this->setMenuList();
+
 		$this->setTitle(getenv("title.expense.write"));
 		$this->base_view("/expense/input/index");
 	}
@@ -244,6 +246,8 @@ class Expense extends MY_Controller {
 		$this->setAssets('expense', 'fixed');
 		$this->setAfterAssets();
 
+		$this->setMenuList();
+
 		$this->setTitle(getenv("title.expense.fixed"));
 		$this->base_view("/expense/fixed/index");
 	}
@@ -373,6 +377,8 @@ class Expense extends MY_Controller {
 		$this->setBeforeAssets();
 		$this->setAssets('expense', 'coefficient');
 		$this->setAfterAssets();
+
+		$this->setMenuList();
 
 		$this->setTitle(getenv("title.expense.coefficient"));
 		$this->base_view("/expense/coefficient/index");

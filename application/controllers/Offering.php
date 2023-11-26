@@ -5,6 +5,7 @@ require 'vendor/autoload.php';
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class Offering extends MY_Controller {
 	public function __construct(){
@@ -23,8 +24,10 @@ class Offering extends MY_Controller {
 		$this->setAssets('offering', 'write');
 		$this->setAfterAssets();
 
+		$this->setMenuList();
+
 		$this->setTitle(getenv("title.offering.write"));
-		$this->base_view("/offering/input/index");
+		$this->base_view("/offering/write/index");
 	}
 
 	/**
@@ -216,6 +219,8 @@ class Offering extends MY_Controller {
 		$this->setAssets('offering', 'coefficient');
 		$this->setAfterAssets();
 
+		$this->setMenuList();
+
 		$this->setTitle(getenv("title.offering.coefficient"));
 		$this->base_view("/offering/coefficient/index");
 	}
@@ -279,6 +284,8 @@ class Offering extends MY_Controller {
 		$this->setBeforeAssets();
 		$this->setAssets('offering', 'total');
 		$this->setAfterAssets();
+
+		$this->setMenuList();
 
 		$this->setTitle(getenv("title.offering.total"));
 		$this->base_view("/offering/total/index");
@@ -347,6 +354,8 @@ class Offering extends MY_Controller {
 		$this->setBeforeAssets();
 		$this->setAssets('offering', 'registrants');
 		$this->setAfterAssets();
+
+		$this->setMenuList();
 
 		$this->setTitle(getenv("title.offering.registrants"));
 		$this->base_view("/offering/registrants/index");
@@ -418,6 +427,7 @@ class Offering extends MY_Controller {
 			'date' 	=> $gets['date']
 		];
 		$result = $this->Income_model->registrants_list($params);
+
 		$orderChangeResult = [];
 		for ($idx=0; $idx < count($result); $idx++) {
 			if ($result[$idx]['OFFERING_TYPE_NAME'] == '십일조헌금') {
@@ -453,29 +463,38 @@ class Offering extends MY_Controller {
 			$totalPrice += $orderChangeResult[$idx]['PRICE'];
 		}
 
-		$spreadsheet = new Spreadsheet();
+		$spreadsheet = IOFactory::load("assets/offering_template_2023.xlsx");
+
+		//$spreadsheet = new Spreadsheet();
 		$sheet = $spreadsheet->getActiveSheet();
 
+		//I1
+		$sheet->setCellValue('I1', $gets['date']);
 		// 행번호 초기화
 		$column = 'A';
+		/*
 		$headers = ['헌금종류', '이름', '기타입력', '금액', '온라인헌금', '헌금종류', '이름', '기타입력', '금액', '온라인헌금'];
 
 		foreach ($headers as $header) {
 			$sheet->setCellValue($column++ . '1', $header);
 		}
+		*/
 
 		// 열번호 초기화
-		$rowNumLeft = 2;
-		$rowNumRight = 2;
+		$rowNumLeft = 3;
+		$rowNumRight = 3;
 		$leftArray = [];
 		$rightArray = [];
 
-		for($idx=0;$idx<ceil(count($values)/2);$idx++) {
+		for ($idx = 0; $idx < ceil(count($values)/2); $idx++) {
 			array_push($leftArray, $values[$idx*2]);
 
 			if ($idx != 0) {
 				array_push($rightArray, $values[$idx*2-1]);
 			}
+		}
+		if (count($values) > 0 && count($values) % 2 == 0) {
+			array_push($rightArray, $values[count($values)-1]);
 		}
 
 		foreach ($leftArray as $key => $value) {
@@ -496,31 +515,35 @@ class Offering extends MY_Controller {
 		}
 
 		// 범위 내 여러 열 너비 설정
-		$sheet->getColumnDimension('A')->setWidth(16);
-		$sheet->getColumnDimension('B')->setWidth(10);
-		$sheet->getColumnDimension('C')->setWidth(25);
-		$sheet->getColumnDimension('D')->setWidth(15);
-		$sheet->getColumnDimension('E')->setWidth(15);
-		$sheet->getColumnDimension('F')->setWidth(16);
-		$sheet->getColumnDimension('G')->setWidth(10);
-		$sheet->getColumnDimension('H')->setWidth(25);
-		$sheet->getColumnDimension('I')->setWidth(15);
-		$sheet->getColumnDimension('J')->setWidth(15);
+//		$sheet->getColumnDimension('A')->setWidth(16);
+//		$sheet->getColumnDimension('B')->setWidth(10);
+//		$sheet->getColumnDimension('C')->setWidth(25);
+//		$sheet->getColumnDimension('D')->setWidth(15);
+//		$sheet->getColumnDimension('E')->setWidth(15);
+//		$sheet->getColumnDimension('F')->setWidth(16);
+//		$sheet->getColumnDimension('G')->setWidth(10);
+//		$sheet->getColumnDimension('H')->setWidth(25);
+//		$sheet->getColumnDimension('I')->setWidth(15);
+//		$sheet->getColumnDimension('J')->setWidth(15);
+
 
 		$sheet->getStyle('D')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
-		$sheet->getStyle ( "A1:E" . (count($leftArray)+1) )->getBorders()->getInside()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN );
-		$sheet->getStyle ( "A1:E" . (count($leftArray)+1) )->getBorders()->getOutline()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM);
-		$sheet->getStyle ( "A1:H1" )->getBorders()->getOutline()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM);
-		$sheet->getStyle ( "A1:E" . (count($leftArray)+1) )->getBorders()->getOutline()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM);
+		$sheet->getStyle ( "A2:E" . (count($leftArray)+3) )->getBorders()->getInside()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN );
+		$sheet->getStyle ( "A2:E" . (count($leftArray)+3) )->getBorders()->getOutline()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM);
+		$sheet->getStyle ( "A2:H2" )->getBorders()->getOutline()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM);
+		$sheet->getStyle ( "A2:E" . (count($leftArray)+3) )->getBorders()->getOutline()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM);
 		$sheet->getStyle('I')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
-		$sheet->getStyle ( "F1:J" . (count($leftArray)+1) )->getBorders()->getInside()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN );
-		$sheet->getStyle ( "F1:J" . (count($leftArray)+1) )->getBorders()->getOutline()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM);
-		$sheet->getStyle ( "F1:J1" )->getBorders()->getOutline()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM);
-		$sheet->getStyle ( "F1:J" . (count($leftArray)+1) )->getBorders()->getOutline()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM);
+		$sheet->getStyle ( "F2:J" . (count($leftArray)+3) )->getBorders()->getInside()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN );
+		$sheet->getStyle ( "F2:J" . (count($leftArray)+3) )->getBorders()->getOutline()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM);
+		$sheet->getStyle ( "F2:J2" )->getBorders()->getOutline()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM);
+		$sheet->getStyle ( "F2:J" . (count($leftArray)+3) )->getBorders()->getOutline()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM);
 
-		$sheet->setCellValue('J' . (count($leftArray)+2), '￦' . number_format($totalPrice) . '원');
-		$sheet->getStyle('J' . (count($leftArray)+2))->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
-		$sheet->getStyle ( "J" . (count($leftArray)+2) )->getBorders()->getBottom()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN );
+
+
+		$sheet->getStyle('J' . (count($leftArray)+3))->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+		//$sheet->getStyle ( "J" . (count($leftArray)+3) )->getBorders()->getBottom()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN );
+
+		$sheet->setCellValue('I' . (count($leftArray)+3), '￦' . number_format($totalPrice) . '원');
 
 		$writer = new Xlsx($spreadsheet);
 

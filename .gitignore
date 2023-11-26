@@ -30,5 +30,3 @@ user_guide_src/cilexer/pycilexer.egg-info/*
 /tests/tests/
 /tests/results/
 ci_sessions/
-/.env.development
-/.env.development.bak

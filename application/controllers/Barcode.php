@@ -7,6 +7,8 @@ class Barcode extends MY_Controller {
 		$this->setAssets('barcode', 'check');
 		$this->setAfterAssets();
 
+		$this->setMenuList();
+
 		$this->setTitle(getenv("title.barcode.check"));
 		$this->base_view("/barcode/check/index");
 	}

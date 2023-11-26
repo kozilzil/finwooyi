@@ -2,6 +2,44 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 class User_model extends CI_Model {
+	public function menu_list($param) {
+		$sql = "
+			SELECT  NO,
+			       	PARENT,
+			       	SEQ,
+			       	DEPTH,
+			       	USE_YN,
+			       	TITLE,
+			       	URL,
+			       	CLASS,
+			       	TYPE
+			  FROM  TB_MENU
+			 WHERE	USE_YN = 'Y'
+			  AND 	PARENT = {$param['parent']}
+			ORDER BY SEQ ASC
+		";
+
+		$result = $this->db
+			->query($sql)  
+			->result_Array();
+
+		return $result;
+	}
+	public function auth_list($param) {
+		$sql = "
+			SELECT  NO,
+			       	MENU_NO
+			  FROM  TB_MENU_AUTH
+			 WHERE	USER_NO = {$param['no']}
+		";
+
+		$result = $this->db
+			->query($sql)
+			->result_Array();
+
+		return $result;
+	}
+
 	/**
 	 * 사용자 리스트 반환
 	 * @param $params

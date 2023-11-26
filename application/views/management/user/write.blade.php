@@ -8,7 +8,12 @@
 					<div class="card card-rounded">
 						<div class="card">
 							<div class="card-body">
-								<h4 class="card-title">{{ $data['data']['title'] }}</h4>
+								<h4 class="card-title">
+									{{ $data['data']['title'] }}
+									@if( array_key_exists('info', $data['data']))
+										<button id="auth-btn" class="btn btn-success fullwidth">권한설정</button>
+									@endif
+								</h4>
 								<div class="forms-sample">
 									<div class="form-group">
 										<label for="name">이름</label>
@@ -50,6 +55,10 @@
 		</div>
 	</div>
 </div>
+
+@if( array_key_exists('info', $data['data']))
+	@include('/management/user/modal/auth_form')
+@endif
 
 <script>
 	function pw_check() {
@@ -269,4 +278,199 @@
 			}
 		})
 	})
+
+	$(document).on('click', '#auth-btn', function() {
+		const userNo = $("#update").attr('data-value')
+		$.ajax({
+			url: '/management/auth_data/',
+			data: {'no': userNo},
+			dataType: 'html',
+			type: 'POST'
+		}).done(function(result) {
+			$("#auth-modal-contents").html(result)
+			$("#auth-modal").modal('show')
+			fnAuthListAfter('view')
+			fnAuthListAfter('update')
+			fnAuthListAfter('admin')
+		})
+	})
+	function fnAuthListAfter(type) {
+		const count = $(`.checkbox_${type}`).length
+		let chk_cnt = 0
+
+		$(`.checkbox_${type}`).each(function(idx, item) {
+			if($(this).is(':checked')) {
+				chk_cnt++
+			}
+		})
+
+		if (count == chk_cnt) {
+			$(`#all_chk_${type}`).prop("checked", true);
+		} else {
+			$(`#all_chk_${type}`).prop("checked", false)
+		}
+
+		// 전체 체크박스 선택처리
+		$(`#all_chk_${type}`).click(function() {
+			if($(this).is(":checked")) {
+				$(`.checkbox_${type}`).each(function(idx, item) {
+					$(this).prop("checked", true)
+				})
+			} else {
+				$(`.checkbox_${type}`).each(function(idx, item) {
+					$(this).prop("checked", false)
+				})
+			}
+
+			if ($(this).attr('id') == 'all_chk_update') {
+				$("#all_chk_view").click()
+			} else if($(this).attr('id') == 'all_chk_admin') {
+				$("#all_chk_update").click()
+			}
+		})
+
+		// 개별 체크박스 선택처리
+		$(`.checkbox_${type}`).click(function() {
+			let count = $(`.checkbox_${type}`).length
+			let chk_cnt = 0
+			let parent_value = null
+
+			if ($(this).hasClass(`child_chk_${type}`)) {
+				parent_value = $(this).data('parent')
+			}
+
+			$(`.checkbox_${type}`).each(function(idx, item) {
+				// 상위권한은 무조건 설정되도록
+				if (parent_value != null) {
+					if($(this).data('value') == parent_value) {
+						$(this).prop("checked", true)
+					}
+
+
+					let childChkCnt = 0
+					$(`.child_chk_${type}`).each(function(idx, item) {
+						if ( $(this).data("parent") == parent_value && $(this).is(":checked")) {
+							childChkCnt++
+						}
+					})
+
+					if (childChkCnt == 0) {
+						if($(this).data('value') == parent_value) {
+							$(this).prop("checked", false)
+						}
+					}
+				} else {
+					const value = $(this).data("value")
+					if(!$(this).is(":checked")) {
+						$(`.checkbox_${type}`).each(function(idx, item) {
+							if ( $(this).data("parent") == value) {
+								$(this).prop("checked", false)
+							}
+						})
+					}
+				}
+
+				if($(this).is(':checked')) {
+					chk_cnt++
+				}
+			})
+
+
+			if (count == chk_cnt) {
+				$(`#all_chk_${type}`).prop("checked", true);
+			} else {
+				$(`#all_chk_${type}`).prop("checked", false);
+			}
+
+			if ($(this).hasClass(`parent_chk_${type}`)) {
+				const parent = $(this).data('value')
+				if(!$(this).is(":checked")) {
+					$(`.child_chk_${type}`).each(function(idx, item) {
+						if ( $(this).data("parent") == parent) {
+							$(this).prop("checked", false)
+						}
+					})
+				} else {
+					$(`.child_chk_${type}`).each(function(idx, item) {
+						if ( $(this).data("parent") == parent) {
+							$(this).prop("checked", true)
+						}
+					})
+				}
+			}
+
+			// parent_chk_view
+			if (type == 'update') {
+				if ($(this).hasClass('parent_chk_update')) {
+					const no = $(this).attr('data-value')
+
+					$(".parent_chk_view").each(function(idx, item) {
+						if ($(item).attr('data-value') == no) {
+							$(item).click()
+						}
+					})
+
+					$(".parent_chk_admin").each(function(idx, item) {
+						if ($(item).attr('data-value') == no) {
+							if ($(item).is(":checked")) {
+								console.log('1')
+							} else {
+								console.log('2')
+							}
+							//$(item).click()
+						}
+					})
+				}
+
+				if ($(this).hasClass('child_chk_update')) {
+					const no = $(this).attr('data-value')
+					const parent = $(this).attr('data-parent')
+
+					$(".child_chk_view").each(function(idx, item) {
+						if ($(item).attr('data-value') == no && $(item).attr('data-parent') == parent) {
+							$(item).click()
+						}
+					})
+				}
+			} else if(type == 'admin') {
+				if ($(this).hasClass('parent_chk_admin')) {
+					const no = $(this).attr('data-value')
+
+					$(".parent_chk_update").each(function(idx, item) {
+						if ($(item).attr('data-value') == no) {
+							$(item).click()
+						}
+					})
+				}
+
+				if ($(this).hasClass('child_chk_admin')) {
+					const no = $(this).attr('data-value')
+					const parent = $(this).attr('data-parent')
+
+					$(".child_chk_update").each(function(idx, item) {
+						if ($(item).attr('data-value') == no && $(item).attr('data-parent') == parent) {
+							$(item).click()
+						}
+					})
+				}
+			} else {
+
+			}
+		})
+
+
+		// if (type == 'update') {
+		// 	const type = $(this).attr('data-type')
+		//
+		//
+		// 	$(`.checkbox_${type}`).each(function(idx, item) {
+		//
+		// 	})
+		// }
+	}
+
+	$(document).on('click', '#modal-save-btn', function() {
+
+	})
 </script>
+

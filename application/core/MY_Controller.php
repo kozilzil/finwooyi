@@ -16,7 +16,8 @@ class MY_Controller extends CI_Controller {
 			'data'	=> []
 		],
 		'data' 		=> [],
-		'modal'		=> []
+		'modal'		=> [],
+		'menu'		=> []
 	];
 	// resource json data
 	private $json;
@@ -42,6 +43,26 @@ class MY_Controller extends CI_Controller {
 		} else {
 			return false;
 		}
+	}
+
+	public function setMenuList() {
+		$this->view_data['menu'] = $this->getMenuList();
+	}
+
+	public function getMenuList() {
+		$this->load->model('User_model');
+		$result = $this->User_model->menu_list(['parent' => 0]);
+		for($idx=0;$idx<count($result);$idx++) {
+			$child = $this->User_model->menu_list(['parent' => $result[$idx]['NO']]);
+			$result[$idx]['child'] = $child;
+		}
+		return $result;
+	}
+
+	public function getAuthList($param) {
+		$this->load->model('User_model');
+		$result = $this->User_model->auth_list($param);
+		return $result;
 	}
 
 	#region 기본 View설정관련 내용
@@ -183,7 +204,6 @@ class MY_Controller extends CI_Controller {
 	}
 	public function base_view($view_name = null) {
 		$this->load->library('blade');
-
 		$this->blade
 			->set_data([
 				'view_name' => $view_name,

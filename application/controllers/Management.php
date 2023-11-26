@@ -78,6 +78,8 @@ class Management extends MY_Controller {
 		$this->addViewData('data', 'type', $type);
 		$this->addViewData('data', 'content', $content);
 
+		$this->setMenuList();
+
 		$this->setTitle(getenv('title.management.user'));
 		$this->base_view("/management/user/index");
 	}
@@ -107,6 +109,9 @@ class Management extends MY_Controller {
 		$this->setBeforeAssets();
 		$this->setAssets('management', 'user_write');
 		$this->setAfterAssets();
+
+		$this->setMenuList();
+
 
 		$this->setTitle(getenv('title.management.user_write'));
 		$this->base_view("/management/user/write");
@@ -246,5 +251,17 @@ class Management extends MY_Controller {
 		} else {
 			echo json_encode(['status' => false]);
 		}
+	}
+
+	public function auth_data() {
+		$posts = $this->input->post();
+
+		$menuList = $this->getMenuList();
+		$authList = $this->getAuthList($posts);
+
+		$this->load->library('blade');
+		$this->blade
+			->set_data(['menu' => $menuList, 'auth' => $authList])
+			->render("management/user/modal/auth_data");
 	}
 }
