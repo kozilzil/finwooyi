@@ -6,6 +6,9 @@
 					<div class="card-body">
 						<h4 class="card-title">지출부</h4>
 						<div class="form-group">
+							<input type="text" class="form-control-sm date" id="start-date" name="start-date" placeholder="시작일">
+						</div>
+						<div class="form-group">
 							<label for="type">주차</label>
 							<select id="weekly" name="weekly" class="form-control">
 								@for($idx = 0; $idx < 5; $idx++)
@@ -82,4 +85,3 @@
 </div>
 
 @include('/expense/input/modal/account')
-

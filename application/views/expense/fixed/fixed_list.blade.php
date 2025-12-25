@@ -17,6 +17,7 @@
 					</tr>
 					</thead>
 					<tbody>
+
 					@if ($data['registrants'][0]['TOTAL_CNT'] > 0)
 						@for($idx = 0; $idx < count($data['registrants']); $idx++)
 							<tr>

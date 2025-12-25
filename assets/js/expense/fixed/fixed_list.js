@@ -50,7 +50,7 @@ $(document).ready(() => {
 								icon: 'success',
 								confirmButtonText: '확인'
 							}).then(() => {
-								expense_list(1)
+								fixed_list(1)
 							})
 						}
 					})
@@ -109,97 +109,111 @@ $(document).ready(() => {
 	 */
 	async function modifyBtnAddClickEvent(target) {
 		const siblingsList = $(target).siblings().children()
+		// 주차
+		const weeklyName = siblingsList.eq(1).html()
+		let html = `<select name="type" class="form-control" data-before=${weeklyName}>`
+		for(let idx =0; idx < 5; idx++) {
+			html += `<option value="${idx + 1}" ${weeklyName.toString() === (idx+1)+'주차' ? "selected" : ''}>${idx+1}주차</option>`
+		}
+		html += `</select>`
+		siblingsList.eq(1).html(html)
 
 		// 헌금대분류 가져오기
 		const typeData = {
 			'is-income' : 'N',
-			'parent'	: 0
+			'parent'	: 0,
+			'year'		: $("#start-date").val()
 		}
 		const offeringParentResult = await offering_list(typeData);
 		if (offeringParentResult.status == true) {
-			const offeringParentName = siblingsList.eq(1).html()
+			const offeringParentName = siblingsList.eq(2).html()
 			let html = `<select name="type" class="form-control offering-type-parent" target="offering-type" data-before=${offeringParentName}>`
 			for(let idx =0; idx < offeringParentResult.data.length; idx++) {
 				html += `<option value="${offeringParentResult.data[idx]['NO']}" ${offeringParentName == offeringParentResult.data[idx]['TITLE'] ? "selected" : ''}>${offeringParentResult.data[idx]['TITLE']}</option>`
 			}
 			html += `</select>`
-			siblingsList.eq(1).html(html)
+			siblingsList.eq(2).html(html)
 		}
-		const offeringParent = siblingsList.eq(1).find('select')
+		const offeringParent = siblingsList.eq(2).find('select')
 		$(offeringParent).change(async () => {
 			$('option:selected', offeringParent[0]).attr('selected',true).siblings().removeAttr('selected');
 
 			// 헌금소분류 가져오기
 			const detailTypeData = {
 				'is-income' : 'N',
-				'parent'	: offeringParent[0].value
+				'parent'	: offeringParent[0].value,
+				'year'		: $("#start-date").val()
 			}
 			const offeringResult = await offering_list(detailTypeData);
 
 			if (offeringResult.status == true) {
-				const offeringName = $(siblingsList.eq(2).html()).attr('data-before')
-				siblingsList.eq(2).html('')
+				const offeringName = $(siblingsList.eq(3).html()).attr('data-before')
+				siblingsList.eq(3).html('')
 				let html = `<select name="type" class="form-control offering-type" data-before=${offeringName}>`
 				for(let idx =0; idx < offeringResult.data.length; idx++) {
 					html += `<option value="${offeringResult.data[idx]['NO']}" ${offeringName == offeringResult.data[idx]['TITLE'] ? "selected" : ''}>${offeringResult.data[idx]['TITLE']}</option>`
 				}
 				html += '</select>'
-				siblingsList.eq(2).html(html)
+				siblingsList.eq(3).html(html)
 			}
 
 
-			const offering = siblingsList.eq(2).find('select')
+			const offering = siblingsList.eq(3).find('select')
 			$(offering).change(async () => {
 				$('option:selected', offering[0]).attr('selected',true).siblings().removeAttr('selected');
 			})
 		})
 
-		const selectObj = siblingsList.eq(1).html()
+		const selectObj = siblingsList.eq(2).html()
 		// 헌금소분류 가져오기
 		const detailTypeData = {
 			'is-income' : 'N',
-			'parent'	: $(selectObj).val()
+			'parent'	: $(selectObj).val(),
+			'year'		: $("#start-date").val()
 		}
 		const offeringResult = await offering_list(detailTypeData);
 		if (offeringResult.status == true) {
-			const offeringName = siblingsList.eq(2).html()
+			const offeringName = siblingsList.eq(3).html()
 			let html = `<select name="type" class="form-control offering-type" data-before=${offeringName}>`
 			for(let idx =0; idx < offeringResult.data.length; idx++) {
 				html += `<option value="${offeringResult.data[idx]['NO']}" ${offeringName == offeringResult.data[idx]['TITLE'] ? "selected" : ''}>${offeringResult.data[idx]['TITLE']}</option>`
 			}
 			html += '</select>'
-			siblingsList.eq(2).html(html)
+			siblingsList.eq(3).html(html)
 		}
-		const offering = siblingsList.eq(2).find('select')
+		const offering = siblingsList.eq(3).find('select')
 		$(offering).change(async () => {
 			$('option:selected', offering[0]).attr('selected',true).siblings().removeAttr('selected');
 		})
 
-		const price = siblingsList.eq(3).html().replaceAll(',', '')
-		siblingsList.eq(3).html(`<input type="text" class="form-control text-" placeholder="금액"
+		// 금액
+		const price = siblingsList.eq(4).html().replaceAll(',', '')
+		siblingsList.eq(4).html(`<input type="text" class="form-control text-" placeholder="금액"
 								   	style="text-align: right"
 								   	oninput="this.value = this.value.replace(/[^0-9.]/g, '');"
 								   	maxlength="15"
 									value="${price}"
 									data-before=${price}
 							>`)
-		const priceData = siblingsList.eq(3).find('input')
+		const priceData = siblingsList.eq(4).find('input')
 		$(priceData).keyup(() => {
-			siblingsList.eq(3).find('input').attr('value', $(priceData).val())
+			siblingsList.eq(4).find('input').attr('value', $(priceData).val())
 		})
 
-		const contents = siblingsList.eq(4).html()
-		siblingsList.eq(4).html(`<input type="text" class="form-control" placeholder="${contents}" value="${contents}" data-before=${contents}>`)
-		const contentsData = siblingsList.eq(4).find('input')
+		// 상세내용
+		const contents = siblingsList.eq(5).html()
+		siblingsList.eq(5).html(`<input type="text" class="form-control" placeholder="${contents}" value="${contents}" data-before=${contents}>`)
+		const contentsData = siblingsList.eq(5).find('input')
 		$(contentsData).keyup(() => {
-			siblingsList.eq(4).find('input').attr('value', $(contentsData).val())
+			siblingsList.eq(5).find('input').attr('value', $(contentsData).val())
 		})
 
-		const recipient = siblingsList.eq(5).html()
-		siblingsList.eq(5).html(`<input type="text" class="form-control" placeholder="${recipient}" value="${recipient}" data-before=${recipient}>`)
-		const recipientData = siblingsList.eq(5).find('input')
+		// 계좌
+		const recipient = siblingsList.eq(6).html()
+		siblingsList.eq(6).html(`<input type="text" class="form-control" placeholder="${recipient}" value="${recipient}" data-before=${recipient}>`)
+		const recipientData = siblingsList.eq(6).find('input')
 		$(recipientData).keyup(() => {
-			siblingsList.eq(5).find('input').attr('value', $(recipientData).val())
+			siblingsList.eq(6).find('input').attr('value', $(recipientData).val())
 		})
 	}
 
@@ -210,21 +224,24 @@ $(document).ready(() => {
 	 */
 	async function cancelBtnAddClickEvent(target) {
 		const siblingsList = $(target).siblings().children()
-		const offeringTypeParent = $(siblingsList.eq(1).html()).attr('data-before')
-		siblingsList.eq(1).html(`${offeringTypeParent}`)
+		const weekly = $(siblingsList.eq(1).html()).attr('data-before')
+		siblingsList.eq(1).html(`${weekly}`)
 
-		const offeringType = $(siblingsList.eq(2).html()).attr('data-before')
-		siblingsList.eq(2).html(`${offeringType}`)
+		const offeringTypeParent = $(siblingsList.eq(2).html()).attr('data-before')
+		siblingsList.eq(2).html(`${offeringTypeParent}`)
 
-		let price = $(siblingsList.eq(3).html()).attr('data-before')
+		const offeringType = $(siblingsList.eq(3).html()).attr('data-before')
+		siblingsList.eq(3).html(`${offeringType}`)
+
+		let price = $(siblingsList.eq(4).html()).attr('data-before')
 		price = price.replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,')
-		siblingsList.eq(3).html(`${price}`)
+		siblingsList.eq(4).html(`${price}`)
 
-		const contents = $(siblingsList.eq(4).html()).attr('data-before')
-		siblingsList.eq(4).html(`${contents}`)
+		const contents = $(siblingsList.eq(5).html()).attr('data-before')
+		siblingsList.eq(5).html(`${contents}`)
 
-		const recipient = $(siblingsList.eq(5).html()).attr('data-before')
-		siblingsList.eq(5).html(`${recipient}`)
+		const recipient = $(siblingsList.eq(6).html()).attr('data-before')
+		siblingsList.eq(6).html(`${recipient}`)
 	}
 
 	/**
@@ -254,10 +271,11 @@ $(document).ready(() => {
 	function modifyCompleteBtnClickEvent(element) {
 		const no = $(element).attr('data-value')
 		const target = $($(element).parent()).siblings().children()
-		const offeringTypeNo = $(target.eq(2).html()).val()
-		const price = $(target.eq(3).html()).val()
-		const contents = $(target.eq(4).html()).val()
-		const recipient = $(target.eq(5).html()).val()
+		const weekly = $(target.eq(1).html()).val()
+		const offeringTypeNo = $(target.eq(3).html()).val()
+		const price = $(target.eq(4).html()).val()
+		const contents = $(target.eq(5).html()).val()
+		const recipient = $(target.eq(6).html()).val()
 		const page = $(element).attr('data-page')
 
 		$.ajax({
@@ -267,6 +285,7 @@ $(document).ready(() => {
 			async: false,
 			data: {
 				no 				: no,
+				weekly			: weekly,
 				price			: price,
 				offeringTypeNo	: offeringTypeNo,
 				contents		: contents,
@@ -279,9 +298,10 @@ $(document).ready(() => {
 					icon: 'success',
 					confirmButtonText: '확인'
 				}).then(() => {
-					expense_list(page)
+					fixed_list(page)
 				})
 			}
 		})
 	}
 })
+

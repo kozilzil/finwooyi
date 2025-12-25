@@ -41,7 +41,7 @@ class Search extends MY_Controller {
 			'end-date'		=> $posts['endDate']
 		];
 
-		$list = $this->_getTotalData($params);
+		$list = $this->_getTotalData($params, 'list');
 
 		$this->load->library('blade');
 		$this->blade
@@ -62,7 +62,7 @@ class Search extends MY_Controller {
 			'end-date'		=> $gets['endDate']
 		];
 
-		$result = $this->_getTotalData($params);
+		$result = $this->_getTotalData($params, 'excel');
 
 		$spreadsheet = new Spreadsheet();
 		$sheet = $spreadsheet->getActiveSheet();
@@ -106,7 +106,7 @@ class Search extends MY_Controller {
 
 		$writer = new Xlsx($spreadsheet);
 
-		$filename = $gets['startDate'] . '_' . $gets['endDate'] . '_총계정원장';
+		$filename = substr($gets['startDate'],0, 4) . '_총계정원장';
 
 		header('Content-Type: application/vnd.ms-excel');
 		header('Content-Disposition: attachment;filename="'. $filename.'.xlsx"');
@@ -120,23 +120,35 @@ class Search extends MY_Controller {
 	 * @param $params
 	 * @return array
 	 */
-	function _getTotalData($params) {
+	function _getTotalData($params, $type) {
 		$this->load->model('Search_model');
 
 		$expenseList = $this->Search_model->getTotalListExpense($params, 'total');
 		$incomeList = $this->Search_model->getTotalListIncome($params, 'total');
 		$list = array_merge($expenseList, $incomeList);
 
-		if (count($list) == 0) {
-			return [];
+		if (count($list) !== 0) {
+			foreach ((array) $list as $key => $value) {
+				$sort['OFFERING_TYPE_NO'][$key] = $value['OFFERING_TYPE_NO'];
+				$sort['REG_DATE'][$key] = $value['REG_DATE'];
+				$sort['TYPE'][$key] = $value['TYPE'];
+				$sort['PARENT_SEQ'][$key] = $value['PARENT_SEQ'];
+				$sort['CHILD_SEQ'][$key] = $value['CHILD_SEQ'];
+			}
+			array_multisort($sort['REG_DATE'], SORT_ASC, $sort['TYPE'], SORT_DESC, $sort['CHILD_SEQ'], SORT_ASC, $sort['PARENT_SEQ'], SORT_ASC, $list);
 		}
 
-		foreach ((array) $list as $key => $value) {
-			$sort['OFFERING_TYPE_NO'][$key] = $value['OFFERING_TYPE_NO'];
-			$sort['REG_DATE'][$key] = $value['REG_DATE'];
+		if ($type == 'list') {
+			$params['year'] = substr($params['start-date'], 0, 4);
+			$carryoverList = $this->Search_model->getCarryover($params);
+			if ($carryoverList != null) {
+				array_unshift($list, ['REG_DATE' => $params['year'].'-01-01', 'MONTH' => "01", 'DAY' => "01", 'TYPE' => 'INCOME', 'PRICE' => $carryoverList['CARRYOVER_PRE'], 'CHILD_TITLE' => '전년도 이월금']);
+				array_push($list, ['MONTH' => "12", 'DAY' => "31", 'TYPE' => 'EXPENSE', 'PRICE' => $carryoverList['CARRYOVER_NEXT'], 'CHILD_TITLE' => '차년도 이월금']);
+			}
 		}
-		array_multisort($sort['REG_DATE'], SORT_ASC, $sort['OFFERING_TYPE_NO'], SORT_ASC, $list);
-
+		if ( $list == []) {
+			return $list;
+		}
 
 		$list[0]['month-chk'] = true;
 		$list[0]['day-chk'] = true;
@@ -158,6 +170,8 @@ class Search extends MY_Controller {
 					$list[$idx-1]['weekly-expense'] = $weeklyExpense;
 					$monthlyIncome += $weeklyIncome;
 					$monthlyExpense += $weeklyExpense;
+					$quarterIncome += $weeklyIncome;
+					$quarterExpense += $weeklyExpense;
 					$totalIncome += $weeklyIncome;
 					$totalExpense += $weeklyExpense;
 					$list[$idx-1]['total-income'] = $totalIncome;
@@ -173,8 +187,6 @@ class Search extends MY_Controller {
 					$list[$idx-1]['monthly-expense'] = $monthlyExpense;
 					$list[$idx-1]['total-income'] = $totalIncome;
 					$list[$idx-1]['total-expense'] = $totalExpense;
-					$quarterIncome += $monthlyIncome;
-					$quarterExpense += $monthlyExpense;
 					$monthlyIncome = 0;
 					$monthlyExpense = 0;
 
@@ -194,18 +206,11 @@ class Search extends MY_Controller {
 			}
 
 			if ($idx+1 == count($list)) {
-				if ($monthlyIncome == 0) {
-					$monthlyIncome = $weeklyIncome;
-				}
-				if ($monthlyExpense == 0) {
-					$monthlyExpense = $weeklyExpense;
-				}
-				if ($totalIncome == 0) {
-					$totalIncome = $weeklyIncome;
-				}
-				if ($totalExpense == 0) {
-					$totalExpense = $weeklyExpense;
-				}
+				$monthlyIncome += $weeklyIncome;
+				$monthlyExpense += $weeklyExpense;
+				$totalIncome += $weeklyIncome;
+				$totalExpense += $weeklyExpense;
+
 				$list[$idx]['weekly-income'] = $weeklyIncome;
 				$list[$idx]['weekly-expense'] = $weeklyExpense;
 				$list[$idx]['monthly-income'] = $monthlyIncome;
@@ -216,6 +221,38 @@ class Search extends MY_Controller {
 		}
 
 		return $list;
+	}
+
+	public function carrayover_update() {
+		$posts = $this->input->post();
+		$params = [
+			'year'	=> $posts['year'],
+			'pre'	=> $posts['pre'] ?? 0,
+			'next'	=> $posts['next'] ?? 0
+		];
+		$this->load->model('Search_model');
+		$data = $this->Search_model->getCarryover($params);
+		if( $data === null ) {
+			$this->Search_model->insertCarryover($params);
+		} else {
+			$this->Search_model->updateCarryover($params);
+		}
+		echo json_encode(['status' => true, 'message' => '처리되었습니다.']);
+	}
+
+	public function carrayover_data() {
+		$posts = $this->input->post();
+		$params = [
+			'year'	=> $posts['year']
+		];
+		$this->load->model('Search_model');
+		$data = $this->Search_model->getCarryover($params);
+		if ($data === null) {
+			$data['YEAR'] = $posts['year'];
+			$data['CARRYOVER_PRE'] = 0;
+			$data['CARRYOVER_NEXT'] = 0;
+		}
+		echo json_encode(['data' => $data]);
 	}
 	#endregion
 
@@ -240,13 +277,16 @@ class Search extends MY_Controller {
 	public function income_list() {
 		$posts = $this->input->post();
 
-		$params = [
-			'start-date' 	=> $posts['startDate'],
-			'end-date'		=> $posts['endDate'],
-			'type'			=> $posts['type']
-		];
+		$list = [];
+		if (array_key_exists('type', $posts)) {
+			$params = [
+				'start-date' 	=> $posts['startDate'],
+				'end-date'		=> $posts['endDate'],
+				'type'			=> $posts['type']
+			];
 
-		$list = $this->_getIncomeData($params);
+			$list = $this->_getIncomeData($params);
+		}
 
 		$this->load->library('blade');
 		$this->blade
@@ -375,6 +415,8 @@ class Search extends MY_Controller {
 					$list[$idx-1]['weekly-expense'] = $weeklyExpense;
 					$monthlyIncome += $weeklyIncome;
 					$monthlyExpense += $weeklyExpense;
+					$quarterIncome += $weeklyIncome;
+					$quarterExpense += $weeklyExpense;
 					$totalIncome += $weeklyIncome;
 					$totalExpense += $weeklyExpense;
 					$list[$idx-1]['total-income'] = $totalIncome;
@@ -390,8 +432,6 @@ class Search extends MY_Controller {
 					$list[$idx-1]['monthly-expense'] = $monthlyExpense;
 					$list[$idx-1]['total-income'] = $totalIncome;
 					$list[$idx-1]['total-expense'] = $totalExpense;
-					$quarterIncome += $monthlyIncome;
-					$quarterExpense += $monthlyExpense;
 					$monthlyIncome = 0;
 					$monthlyExpense = 0;
 
@@ -411,18 +451,11 @@ class Search extends MY_Controller {
 			}
 
 			if ($idx+1 == count($list)) {
-				if ($monthlyIncome == 0) {
-					$monthlyIncome = $weeklyIncome;
-				}
-				if ($monthlyExpense == 0) {
-					$monthlyExpense = $weeklyExpense;
-				}
-				if ($totalIncome == 0) {
-					$totalIncome = $weeklyIncome;
-				}
-				if ($totalExpense == 0) {
-					$totalExpense = $weeklyExpense;
-				}
+				$monthlyIncome += $weeklyIncome;
+				$monthlyExpense += $weeklyExpense;
+				$totalIncome += $weeklyIncome;
+				$totalExpense += $weeklyExpense;
+
 				$list[$idx]['weekly-income'] = $weeklyIncome;
 				$list[$idx]['weekly-expense'] = $weeklyExpense;
 				$list[$idx]['monthly-income'] = $monthlyIncome;
@@ -457,13 +490,16 @@ class Search extends MY_Controller {
 	public function expense_list() {
 		$posts = $this->input->post();
 
-		$params = [
-			'start-date' 	=> $posts['startDate'],
-			'end-date'		=> $posts['endDate'],
-			'type'			=> $posts['type']
-		];
+		$list = [];
+		if (array_key_exists('type', $posts)) {
+			$params = [
+				'start-date' 	=> $posts['startDate'],
+				'end-date'		=> $posts['endDate'],
+				'type'			=> $posts['type']
+			];
 
-		$list = $this->_getExpenseData($params);
+			$list = $this->_getExpenseData($params);
+		}
 
 		$this->load->library('blade');
 		$this->blade
@@ -601,6 +637,8 @@ class Search extends MY_Controller {
 					$list[$idx-1]['weekly-expense'] = $weeklyExpense;
 					$monthlyIncome += $weeklyIncome;
 					$monthlyExpense += $weeklyExpense;
+					$quarterIncome += $weeklyIncome;
+					$quarterExpense += $weeklyExpense;
 					$totalIncome += $weeklyIncome;
 					$totalExpense += $weeklyExpense;
 					$list[$idx-1]['total-income'] = $totalIncome;
@@ -615,8 +653,6 @@ class Search extends MY_Controller {
 					$list[$idx-1]['monthly-expense'] = $monthlyExpense;
 					$list[$idx-1]['total-income'] = $totalIncome;
 					$list[$idx-1]['total-expense'] = $totalExpense;
-					$quarterIncome += $monthlyIncome;
-					$quarterExpense += $monthlyExpense;
 					$monthlyIncome = 0;
 					$monthlyExpense = 0;
 
@@ -636,26 +672,11 @@ class Search extends MY_Controller {
 			}
 
 			if ($idx+1 == count($list)) {
-				if ($monthlyIncome == 0) {
-					$monthlyIncome = $weeklyIncome;
-				} else {
-					$monthlyIncome += $weeklyIncome;
-				}
-				if ($monthlyExpense == 0) {
-					$monthlyExpense = $weeklyExpense;
-				} else {
-					$monthlyExpense += $weeklyExpense;
-				}
-				if ($totalIncome == 0) {
-					$totalIncome = $weeklyIncome;
-				} else {
-					$totalIncome += $weeklyIncome;
-				}
-				if ($totalExpense == 0) {
-					$totalExpense = $weeklyExpense;
-				} else {
-					$totalExpense += $weeklyExpense;
-				}
+				$monthlyIncome += $weeklyIncome;
+				$monthlyExpense += $weeklyExpense;
+				$totalIncome += $weeklyIncome;
+				$totalExpense += $weeklyExpense;
+
 				$list[$idx]['weekly-income'] = $weeklyIncome;
 				$list[$idx]['weekly-expense'] = $weeklyExpense;
 				$list[$idx]['monthly-income'] = $monthlyIncome;
@@ -801,23 +822,64 @@ class Search extends MY_Controller {
 
 	public function weekly_table_excel_download() {
 		$gets = $this->input->get();
+		$year = substr($gets['date'],0,4);
 
 		$this->load->model('Income_model');
 		$this->load->model('User_model');
 		$this->load->model('Expense_model');
-		$newDate = date("Y년 m월 d일", strtotime($gets['date']));
-		$params = [
-			'date' 	=> $gets['date']
-		];
 
-		$spreadsheet = IOFactory::load("assets/weekly_table_2023.xlsx");
+		$keyValue = [];
+
+		try {
+			$filename = "assets/excel/weekly_table/weekly_table.xlsx";
+			// 업로드 된 엑셀 형식에 맞는 Reader객체를 만든다.
+			$objReader = IOFactory::createReaderForFile($filename);
+			// 읽기전용으로 설정
+			$objReader->setReadDataOnly(true);
+			// 엑셀파일을 읽는다
+			$objExcel = $objReader->load($filename);
+			// 첫번째 시트를 선택
+			$objExcel->setActiveSheetIndex(0);
+			$objWorksheet = $objExcel->getActiveSheet();
+			$rowIterator = $objWorksheet->getRowIterator();
+
+			foreach ($rowIterator as $row) { // 모든 행에 대해서
+				$cellIterator = $row->getCellIterator();
+				$cellIterator->setIterateOnlyExistingCells(false);
+			}
+
+			$maxRow = $objWorksheet->getHighestRow();
+
+			for ($i = 2 ; $i <= $maxRow ; $i++) {
+				$loadYear = $objWorksheet->getCell('A' . $i)->getValue(); // A열
+
+				if ($year == $loadYear) {
+					$key = $objWorksheet->getCell('B' . $i)->getValue(); // B열
+					$address = $objWorksheet->getCell('C' . $i)->getValue(); // C열
+					$keyValue[$key] = $address;
+				}
+			}
+		}
+		catch (exception $e) {
+			echo '엑셀파일을 읽는도중 오류가 발생하였습니다.';exit;
+		}
+
+
+		$spreadsheet = IOFactory::load("assets/excel/weekly_table/".$year.".xlsx");
 
 		$sheet = $spreadsheet->getActiveSheet();
+		$dateArray = getenv('mapping.weekly_table_excel.date');
+		$result = explode('/', $dateArray);
+		$newDate = date($result[1], strtotime($gets['date']));
+
 		$sheet->setCellValue('F9', $newDate);
 
 		#region 수입정리
 		$incomeArray = [];
 		$parentIncomeArray = [];
+		$params = [
+			'date' 	=> $gets['date']
+		];
 		$incomeResult = $this->Income_model->coefficient_list($params);
 		for($idx = 0; $idx < count($incomeResult); $idx++) {
 			if (!array_key_exists($incomeResult[$idx]['OFFERING_TYPE_NO'], $incomeArray)) {
@@ -838,139 +900,14 @@ class Search extends MY_Controller {
 		}
 
 		// 수입 상세내역 정리
-		foreach ($incomeArray AS $item) {
-			switch ($item['name']) {
-				case "유치부헌금":
-					$sheet->setCellValue('C12', $item['price']);
-					break;
-				case "유 초등부헌금":
-					$sheet->setCellValue('C13', $item['price']);
-					break;
-				case "중고등부헌금":
-					$sheet->setCellValue('C14', $item['price']);
-					break;
-				case "주일헌금":
-					$sheet->setCellValue('C15', $item['price']);
-					break;
-				case "십일조헌금":
-					$sheet->setCellValue('C16', $item['price']);
-					break;
-				case "감사헌금":
-					$sheet->setCellValue('C17', $item['price']);
-					break;
-				case "에스겔헌금":
-					$sheet->setCellValue('C18', $item['price']);
-					break;
-				case "목장헌금":
-					$sheet->setCellValue('C19', $item['price']);
-					break;
-
-				case "신년감사헌금":
-					$sheet->setCellValue('C22', $item['price']);
-					break;
-				case "부활절감사헌금":
-					$sheet->setCellValue('C23', $item['price']);
-					break;
-				case "맥추절감사헌금":
-					$sheet->setCellValue('C24', $item['price']);
-					break;
-				case "추수감사헌금":
-					$sheet->setCellValue('C25', $item['price']);
-					break;
-				case "성탄절감사헌금":
-					$sheet->setCellValue('C26', $item['price']);
-					break;
-
-				case "선교헌금":
-					$sheet->setCellValue('C28', $item['price']);
-					break;
-				case "장학헌금":
-					$sheet->setCellValue('C29', $item['price']);
-					break;
-				case "엎드림헌금":
-					$sheet->setCellValue('C30', $item['price']);
-					break;
-				case "이웃사랑헌금":
-					$sheet->setCellValue('C31', $item['price']);
-					break;
-				case "전도헌금":
-					$sheet->setCellValue('C32', $item['price']);
-					break;
-
-				case "부흥사경회헌금":
-					$sheet->setCellValue('C34', $item['price']);
-					break;
-				case "세례교인헌금":
-					$sheet->setCellValue('C35', $item['price']);
-					break;
-				case "건축헌금":
-					$sheet->setCellValue('C36', $item['price']);
-					break;
-				case "엘레베이터헌금":
-					$sheet->setCellValue('C37', $item['price']);
-					break;
-				case "차세대헌금":
-					$sheet->setCellValue('C38', $item['price']);
-					break;
-				case "설립기념주일":
-					$sheet->setCellValue('C39', $item['price']);
-					break;
-				case "기타특별헌금":
-					$sheet->setCellValue('C40', $item['price']);
-					break;
-				case "사랑의 헌금":
-					$sheet->setCellValue('C41', $item['price']);
-					break;
-
-				case "선교헌금(카페)":
-					$sheet->setCellValue('C44', $item['price']);
-					break;
-				case "적금만기수입금":
-					$sheet->setCellValue('C45', $item['price']);
-					break;
-				case "잡수익기타":
-					$sheet->setCellValue('C46', $item['price']);
-					break;
-				case "교육관사택임차보증금":
-					$sheet->setCellValue('C47', $item['price']);
-					break;
-				case "임차보증금환입금":
-					$sheet->setCellValue('C48', $item['price']);
-					break;
-
-				case "미래사역비환입금":
-					$sheet->setCellValue('C52', $item['price']);
-					break;
-				case "일반적금환입금":
-					$sheet->setCellValue('C53', $item['price']);
-					break;
-				case "은급비환입금":
-					$sheet->setCellValue('C54', $item['price']);
-					break;
-			}
+		foreach ($incomeArray as $key => $item) {
+			$sheet->setCellValue($keyValue[$key], $item['price']);
 		}
 
 		// 수입 소계정리
-		foreach ($parentIncomeArray AS $item) {
-			switch ($item['name']) {
-				case "정상헌금":
-					$sheet->setCellValue('C21', $item['price']);
-					break;
-				case "절기헌금":
-					$sheet->setCellValue('C27', $item['price']);
-					break;
-				case "선교장학":
-					$sheet->setCellValue('C33', $item['price']);
-					break;
-				case "기타목적헌금":
-					$sheet->setCellValue('C43', $item['price']);
-					break;
-				case "기타수익급":
-					$sheet->setCellValue('C51', $item['price']);
-					break;
-				case "환입금":
-					$sheet->setCellValue('C56', $item['price']);
-					break;
+		foreach ($parentIncomeArray as $key => $item) {
+			if (!empty($keyValue[$key])) {
+				$sheet->setCellValue($keyValue[$key], $item['price']);
 			}
 		}
 		#endregion
@@ -998,263 +935,14 @@ class Search extends MY_Controller {
 		}
 
 		// 지출 상세내역 정리
-		foreach ($expenseArray AS $item) {
-			switch ($item['name']) {
-				case "교역자사례비":
-					$sheet->setCellValue('G12', $item['price']);
-					break;
-				case "직원사례비":
-					$sheet->setCellValue('G13', $item['price']);
-					break;
-				case "지휘자보수비":
-					$sheet->setCellValue('G14', $item['price']);
-					break;
-
-				case "목회활동비":
-					$sheet->setCellValue('G16', $item['price']);
-					break;
-				case "안식활동비":
-					$sheet->setCellValue('G17', $item['price']);
-					break;
-				case "접대비":
-					$sheet->setCellValue('G18', $item['price']);
-					break;
-				case "도서구입비":
-					$sheet->setCellValue('G19', $item['price']);
-					break;
-				case "판공비":
-					$sheet->setCellValue('G20', $item['price']);
-					break;
-				case "인쇄비":
-					$sheet->setCellValue('G21', $item['price']);
-					break;
-				case "세례교인헌금":
-					$sheet->setCellValue('G22', $item['price']);
-					break;
-				case "경조비":
-					$sheet->setCellValue('G23', $item['price']);
-					break;
-				case "교육 및 강사비":
-					$sheet->setCellValue('G24', $item['price']);
-					break;
-				case "구제비":
-					$sheet->setCellValue('G25', $item['price']);
-					break;
-				case "수양(휴가)회비":
-					$sheet->setCellValue('G26', $item['price']);
-					break;
-				case "상회비":
-					$sheet->setCellValue('G27', $item['price']);
-					break;
-
-				case "부흥사경회비":
-					$sheet->setCellValue('G29', $item['price']);
-					break;
-				case "심방비":
-					$sheet->setCellValue('G30', $item['price']);
-					break;
-				case "미화비":
-					$sheet->setCellValue('G31', $item['price']);
-					break;
-				case "홍보영상비":
-					$sheet->setCellValue('G32', $item['price']);
-					break;
-
-				case "선교비":
-					$sheet->setCellValue('G34', $item['price']);
-					break;
-				case "교역자장학금":
-					$sheet->setCellValue('G35', $item['price']);
-					break;
-				case "장학금":
-					$sheet->setCellValue('G36', $item['price']);
-					break;
-
-				case "미자립교회지원":
-					$sheet->setCellValue('G38', $item['price']);
-					break;
-				case "70인전도비":
-					$sheet->setCellValue('G39', $item['price']);
-					break;
-				case "새가족양육비":
-					$sheet->setCellValue('G40', $item['price']);
-					break;
-				case "문서전도비":
-					$sheet->setCellValue('G41', $item['price']);
-					break;
-				case "전도행사비":
-					$sheet->setCellValue('G42', $item['price']);
-					break;
-
-				case "유치부 교육비":
-					$sheet->setCellValue('G44', $item['price']);
-					break;
-				case "유초등부 교육비":
-					$sheet->setCellValue('G45', $item['price']);
-					break;
-				case "중고등부 교육비":
-					$sheet->setCellValue('G46', $item['price']);
-					break;
-				case "교육위원회비":
-					$sheet->setCellValue('G47', $item['price']);
-					break;
-
-				case "벧엘찬양대":
-					$sheet->setCellValue('G52', $item['price']);
-					break;
-				case "시온찬양대":
-					$sheet->setCellValue('G53', $item['price']);
-					break;
-				case "주향한찬양대":
-					$sheet->setCellValue('G54', $item['price']);
-					break;
-				case "오케스트라운영비":
-					$sheet->setCellValue('G55', $item['price']);
-					break;
-				case "솔리스트":
-					$sheet->setCellValue('G56', $item['price']);
-					break;
-				case "반주자":
-					$sheet->setCellValue('G57', $item['price']);
-					break;
-				case "음영비":
-					$sheet->setCellValue('G58', $item['price']);
-					break;
-
-				case "행사비":
-					$sheet->setCellValue('G60', $item['price']);
-					break;
-
-				case "비품구입비":
-					$sheet->setCellValue('G62', $item['price']);
-					break;
-				case "시설물보수비":
-					$sheet->setCellValue('G63', $item['price']);
-					break;
-				case "엘레베이터설치비":
-					$sheet->setCellValue('G64', $item['price']);
-					break;
-				case "소모품비":
-					$sheet->setCellValue('G65', $item['price']);
-					break;
-				case "공공요금":
-					$sheet->setCellValue('G66', $item['price']);
-					break;
-				case "소유권이전비":
-					$sheet->setCellValue('G67', $item['price']);
-					break;
-				case "카페물품구입비":
-					$sheet->setCellValue('G68', $item['price']);
-					break;
-
-				case "차량구입비":
-					$sheet->setCellValue('G71', $item['price']);
-					break;
-				case "차량관리비":
-					$sheet->setCellValue('G72', $item['price']);
-					break;
-
-				case "후생비":
-					$sheet->setCellValue('G74', $item['price']);
-					break;
-				case "교역자주택지원비":
-					$sheet->setCellValue('G75', $item['price']);
-					break;
-				case "교역자자녀교육비":
-					$sheet->setCellValue('G76', $item['price']);
-					break;
-				case "교역자후생비":
-					$sheet->setCellValue('G77', $item['price']);
-					break;
-				case "사택임차보증금":
-					$sheet->setCellValue('G78', $item['price']);
-					break;
-				case "차입금이자":
-					$sheet->setCellValue('G79', $item['price']);
-					break;
-				case "화재보험료":
-					$sheet->setCellValue('G80', $item['price']);
-					break;
-				case "보험료(4대보험)":
-					$sheet->setCellValue('G81', $item['price']);
-					break;
-				case "퇴직금":
-					$sheet->setCellValue('G82', $item['price']);
-					break;
-				case "잡비청소비기타":
-					$sheet->setCellValue('G83', $item['price']);
-					break;
-
-				case "총회연금":
-					$sheet->setCellValue('G87', $item['price']);
-					break;
-				case "연금":
-					$sheet->setCellValue('G88', $item['price']);
-					break;
-				case "담임목사은급비":
-					$sheet->setCellValue('G89', $item['price']);
-					break;
-				case "일반직원은급비":
-					$sheet->setCellValue('G90', $item['price']);
-					break;
-				case "일반적금":
-					$sheet->setCellValue('G91', $item['price']);
-					break;
-				case "상환적금":
-					$sheet->setCellValue('G92', $item['price']);
-					break;
-
-				case "일반예비비":
-					$sheet->setCellValue('G94', $item['price']);
-					break;
-				case "미래사역비":
-					$sheet->setCellValue('G95', $item['price']);
-					break;
-			}
+		foreach ($expenseArray as $key => $item) {
+			$sheet->setCellValue($keyValue[$key], $item['price']);
 		}
 
 		// 지출 소계정리
-		foreach ($parentExpenseArray AS $item) {
-			switch ($item['name']) {
-				case "사례보수비":
-					$sheet->setCellValue('G15', $item['price']);
-					break;
-				case "목회운영비":
-					$sheet->setCellValue('G28', $item['price']);
-					break;
-				case "예배비":
-					$sheet->setCellValue('G33', $item['price']);
-					break;
-				case "선교장학비":
-					$sheet->setCellValue('G37', $item['price']);
-					break;
-				case "전도비":
-					$sheet->setCellValue('G43', $item['price']);
-					break;
-				case "교육비":
-					$sheet->setCellValue('G51', $item['price']);
-					break;
-				case "음영비":
-					$sheet->setCellValue('G59', $item['price']);
-					break;
-				case "행사비":
-					$sheet->setCellValue('G61', $item['price']);
-					break;
-				case "총무비":
-					$sheet->setCellValue('G70', $item['price']);
-					break;
-				case "기타후생비":
-					$sheet->setCellValue('G86', $item['price']);
-					break;
-				case "적금":
-					$sheet->setCellValue('G93', $item['price']);
-					break;
-				case "차량비":
-					$sheet->setCellValue('G73', $item['price']);
-					break;
-				case "예비비":
-					$sheet->setCellValue('G96', $item['price']);
-					break;
+		foreach ($parentExpenseArray as $key => $item) {
+			if (!empty($keyValue[$key])) {
+				$sheet->setCellValue($keyValue[$key], $item['price']);
 			}
 		}
 		#endregion

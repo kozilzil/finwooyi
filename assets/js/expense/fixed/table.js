@@ -2,10 +2,16 @@ $(document).ready(async function (e) {
 	$('#contents').focus()
 	$("#new-div").hide()
 
+	await fixedSetting()
+	await fixed_list(1)
+})
+
+async function fixedSetting() {
 	// 헌금대분류 가져오기
 	const typeData = {
 		'is-income' : 'N',
-		'parent'	: 0
+		'parent'	: 0,
+		'year'		: $("#start-date").val()
 	}
 	const result = offering_list(typeData);
 	result.then((resolve) => {
@@ -19,9 +25,23 @@ $(document).ready(async function (e) {
 			const target = $("#type").attr('data-target')
 
 			detailTypeChange($(`#${target}`))
+		} else {
+			$("#type").html('')
+			$("#detail-type").html('')
 		}
 	})
+}
 
+// 달력처리
+$("#start-date").datepicker({
+	"format" 	: "yyyy",
+	"autoclose"	: true,
+	viewMode: "years",
+	minViewMode: "years"
+
+}).datepicker("setDate", 'now')
+$(document).on('change', '#start-date', async function() {
+	await fixedSetting()
 	await fixed_list(1)
 })
 
@@ -153,7 +173,8 @@ async function register_offering() {
 			payMethod	: payMethod,
 			accountNo	: accountNo,
 			recipient	: recipient,
-			weekly		: weekly
+			weekly		: weekly,
+			year		: $("#start-date").val()
 		}
 	})
 
@@ -184,7 +205,8 @@ async function detailTypeChange(target) {
 
 	const typeData = {
 		'is-income' : 'N',
-		'parent'	: parent
+		'parent'	: parent,
+		'year'		: $("#start-date").val()
 	}
 
 	const result = offering_list(typeData);
@@ -212,12 +234,14 @@ async function offering_list(data) {
 }
 
 async function fixed_list(page) {
+	const year = $('#start-date').val().toString().substr(0, 4)
 	const html = await $.ajax({
 		url: '/expense/fixed_list',
 		type: "post",
 		dataType: "html",
 		data: {
-			page : page
+			page : page,
+			year : year
 		}
 	})
 

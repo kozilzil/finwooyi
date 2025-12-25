@@ -38,8 +38,10 @@
 
 	// 달력처리
 	$("#fixed-modal-start-date").datepicker({
-		format 		: "yyyy-mm-dd",
-		autoclose	: true
+		format 		: "yyyy",
+		autoclose	: true,
+		viewMode: "years",
+		minViewMode: "years"
 	}).datepicker("setDate", fixedStartDate)
 
 	$(document).on('click', '#fixed-select', async () => {
@@ -54,10 +56,14 @@
 	$(document).on('change', "#fixed-modal-weekly", async () => {
 		await fixedList(1)
 	})
+	$(document).on('change', "#fixed-modal-start-date", async () => {
+		await fixedList(1)
+	})
 
 	async function fixedList(page) {
 		const contents = $("#fixed-modal-contents").val()
 		const weekly = $("#fixed-modal-weekly option:selected").val()
+		const year = $("#fixed-modal-start-date").val()
 		const result = await $.ajax({
 			url: '/expense/fixed_popup_list',
 			type: "post",
@@ -65,7 +71,8 @@
 			data: {
 				page 	 	: page,
 				contents 	: contents,
-				weekly		: weekly
+				weekly		: weekly,
+				year		: year
 			}
 		})
 		$("#fixed-modal-data-list-div").html(result)
@@ -148,7 +155,7 @@
 	async function registerFixed() {
 		$(".select-btn").each(async (idx, element) => {
 			if ($(element).is(':checked')) {
-				const regDate = $("#fixed-modal-start-date").val()
+				const regDate = $("#start-date").val()
 				const typeNo = $(element).attr('data-child')
 				const type = $(element).attr('data-type')
 				const contents = $(element).attr('data-contents')

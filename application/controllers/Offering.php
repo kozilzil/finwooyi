@@ -35,11 +35,13 @@ class Offering extends MY_Controller {
 	 */
 	public function offering_list() {
 		$posts = $this->input->post();
+		$year = substr($posts['year'], 0, 4);
 
 		$this->load->model('Offering_model');
 		$params = [
 			'is-income' => $posts['is-income'],
-			'parent'	=> $posts['parent']
+			'parent'	=> $posts['parent'],
+			'year'		=> $year
 		];
 		$result = $this->Offering_model->offering_type_list($params);
 		if ($result != null) {
@@ -91,7 +93,8 @@ class Offering extends MY_Controller {
 		$params = [
 			'date' 	=> $posts['date'],
 			'limit'	=> $limit,
-			'page'	=> $page
+			'page'	=> $page,
+			'year'	=> substr($posts['date'],0,4)
 		];
 		$list = $this->Income_model->income_list($params);
 

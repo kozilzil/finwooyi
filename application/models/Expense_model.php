@@ -351,6 +351,11 @@ class Expense_model extends CI_Model {
 			   AND	T1.WEEKLY = '{$params['weekly']}'
 			";
 		}
+		if ($params['year'] != '') {
+			$sql .= "
+			   AND	T1.YEAR = '{$params['year']}'
+			";
+		}
 		// $weekly
 		$sql .= "
 			ORDER BY T1.NO DESC
@@ -384,6 +389,11 @@ class Expense_model extends CI_Model {
 			   AND	WEEKLY = '{$params['weekly']}'
 			";
 		}
+		if ($params['year'] != '') {
+			$sql .= "
+			   AND	YEAR = '{$params['year']}'
+			";
+		}
 
 		$countArray = $this->db
 			->query($sql)
@@ -404,7 +414,8 @@ class Expense_model extends CI_Model {
 			 	PAYMETHOD,
 			 	ACCOUNT_NO,
 			 	RECIPIENT,
-			 	WEEKLY
+			 	WEEKLY,
+			 	YEAR
 			)
 			VALUES
 			(
@@ -414,7 +425,8 @@ class Expense_model extends CI_Model {
 			 	'{$params['pay-method']}',
 			 	'{$params['account-no']}',
 			 	'{$params['recipient']}',
-			 	'{$params['weekly']}'
+			 	'{$params['weekly']}',
+			 	'{$params['year']}'
 			)
 		";
 		$this->db->query($sql);
@@ -434,7 +446,8 @@ class Expense_model extends CI_Model {
 				   SET 	OFFERING_TYPE_NO 	= {$params['offeringTypeNo']},
 				       	PRICE 				= {$params['price']},
 				       	CONTENTS			= '{$params['contents']}',
-				       	RECIPIENT			= '{$params['recipient']}'
+				       	RECIPIENT			= '{$params['recipient']}',
+				        WEEKLY 				= {$params['weekly']}
                  WHERE  NO 					= {$params['no']}
         ";
 

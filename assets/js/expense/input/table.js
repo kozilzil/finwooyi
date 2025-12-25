@@ -3,11 +3,17 @@ $(document).ready(function (e) {
 	$("#new-div").hide()
 
 	// 헌금대분류 가져오기
+	expenseSetting()
+})
+
+async function expenseSetting() {
+	// 헌금대분류 가져오기
 	const typeData = {
 		'is-income' : 'N',
-		'parent'	: 0
+		'parent'	: 0,
+		'year'		: $("#start-date").val()
 	}
-	const result = offering_list(typeData);
+	const result = offering_list(typeData)
 	result.then((resolve) => {
 		if (resolve.status == true) {
 			let html = ''
@@ -19,18 +25,22 @@ $(document).ready(function (e) {
 			const target = $("#type").attr('data-target')
 
 			detailTypeChange($(`#${target}`))
+		} else {
+			$("#type").html('')
+			$("#detail-type").html('')
 		}
 	})
-})
+}
 
 // 달력처리
 $("#start-date").datepicker({
 	"format" 	: "yyyy-mm-dd",
-	"autoclose"	: true
+	"autoclose"	: true,
 }).datepicker("setDate", 'now')
 	.datepicker(expense_list(1))
 // 달력변경
 $(document).on('change', '#start-date', function() {
+	expenseSetting()
 	expense_list(1)
 })
 
@@ -179,7 +189,8 @@ async function detailTypeChange(target) {
 
 	const typeData = {
 		'is-income' : 'N',
-		'parent'	: parent
+		'parent'	: parent,
+		'year'		: $("#start-date").val()
 	}
 
 	const resolve = await offering_list(typeData);

@@ -7,6 +7,7 @@
 						<div class="d-sm-flex justify-content-between align-items-start">
 							<div>
 								<h4 class="card-title">
+									<input type="text" class="form-control-sm date" id="check-date" name="check-date" placeholder="설정년도" readonly>
 									<input type="text" class="form-control-sm date" id="start-date" name="start-date" placeholder="시작일" readonly>
 									<input type="text" class="form-control-sm date" id="end-date" name="end-date" placeholder="종료일" readonly>
 									<select id="type" name="type" class="form-control-sm" data-target="detail-type">

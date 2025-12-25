@@ -26,6 +26,11 @@ class Offering_model extends CI_Model {
 			   AND 	PARENT = {$params['parent']}
 			";
 		}
+		if (array_key_exists('year', $params)) {
+			$sql .= "
+			   AND 	YEAR = {$params['year']}
+			";
+		}
 		$resultArray = $this->db
 			->query($sql)
 			->result_Array();

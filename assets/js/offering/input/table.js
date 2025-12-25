@@ -4,7 +4,8 @@ $(document).ready(function (e) {
 	// 헌금대분류 가져오기
 	const typeData = {
 		'is-income' : 'Y',
-		'parent'	: 0
+		'parent'	: 0,
+		'year'		: $("start-date").val()
 	}
 	const result = offering_list(typeData);
 	result.then(async (resolve) => {
@@ -98,7 +99,8 @@ $(document).on('keyup', '#name', function(e) {
 					const parent = $('#type option:selected').val()
 					const typeData = {
 						'is-income' : 'Y',
-						'parent'	: parent
+						'parent'	: parent,
+						'year'		: $("#start-date").val()
 					}
 
 					const result = offering_list(typeData);
@@ -353,7 +355,8 @@ async function detailTypeChange(target) {
 
 	const typeData = {
 		'is-income' : 'Y',
-		'parent'	: parent
+		'parent'	: parent,
+		'year'		: $("#start-date").val()
 	}
 
 	const result = offering_list(typeData);

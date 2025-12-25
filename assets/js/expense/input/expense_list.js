@@ -113,7 +113,8 @@ $(document).ready(() => {
 		// 헌금대분류 가져오기
 		const typeData = {
 			'is-income' : 'N',
-			'parent'	: 0
+			'parent'	: 0,
+			'year'		: $("#start-date").val()
 		}
 		const offeringParentResult = await offering_list(typeData);
 		if (offeringParentResult.status == true) {
@@ -132,7 +133,8 @@ $(document).ready(() => {
 			// 헌금소분류 가져오기
 			const detailTypeData = {
 				'is-income' : 'N',
-				'parent'	: offeringParent[0].value
+				'parent'	: offeringParent[0].value,
+				'year'		: $("#start-date").val()
 			}
 			const offeringResult = await offering_list(detailTypeData);
 
@@ -158,7 +160,8 @@ $(document).ready(() => {
 		// 헌금소분류 가져오기
 		const detailTypeData = {
 			'is-income' : 'N',
-			'parent'	: $(selectObj).val()
+			'parent'	: $(selectObj).val(),
+			'year'		: $("#start-date").val()
 		}
 		const offeringResult = await offering_list(detailTypeData);
 		if (offeringResult.status == true) {

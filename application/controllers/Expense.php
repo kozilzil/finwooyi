@@ -265,7 +265,8 @@ class Expense extends MY_Controller {
 			'pay-method'	=> $posts['payMethod'],
 			'account-no'	=> $posts['accountNo'],
 			'recipient'		=> $posts['recipient'],
-			'weekly'		=> $posts['weekly']
+			'weekly'		=> $posts['weekly'],
+			'year'			=> $posts['year']
 		]);
 
 		echo json_encode(['status' => true]);
@@ -277,6 +278,7 @@ class Expense extends MY_Controller {
 	function _fixedData($count) {
 		$posts = $this->input->post();
 		$page = $posts['page'] ?? 1;
+		$year = $posts['year'];
 		$contents = $posts['contents'] ?? '';
 		$weekly = $posts['weekly'] ?? '';
 		$limit = $count;
@@ -285,7 +287,8 @@ class Expense extends MY_Controller {
 			'limit'		=> $limit,
 			'contents'	=> $contents,
 			'weekly'	=> $weekly,
-			'page'		=> $page
+			'page'		=> $page,
+			'year'		=> $year
 		]);
 
 		$this->load->library("pagination");

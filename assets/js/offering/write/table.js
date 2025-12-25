@@ -1,26 +1,32 @@
-$(document).ready(function (e) {
+$(document).ready(async function (e) {
 	$('#name').focus()
 
+	await offeringSetting()
+})
+
+async function offeringSetting() {
 	// 헌금대분류 가져오기
 	const typeData = {
 		'is-income' : 'Y',
-		'parent'	: 0
+		'parent'	: 0,
+		'year'		: $("#start-date").val()
 	}
-	const result = offering_list(typeData);
-	result.then(async (resolve) => {
-		if (resolve.status == true) {
-			let html = ''
-			for(let idx =0; idx < resolve.data.length; idx++) {
-				html += `<option value="${resolve.data[idx]['NO']}">${resolve.data[idx]['TITLE']}</option>`
-			}
-			$("#type").html(html)
-
-			const target = $("#type").attr('data-target')
-
-			await detailTypeChange($(`#${target}`))
+	const result = await offering_list(typeData)
+	if (result.status == true) {
+		let html = ''
+		for(let idx =0; idx < result.data.length; idx++) {
+			html += `<option value="${result.data[idx]['NO']}">${result.data[idx]['TITLE']}</option>`
 		}
-	})
-})
+		$("#type").html(html)
+
+		const target = $("#type").attr('data-target')
+
+		await detailTypeChange($(`#${target}`))
+	} else {
+		$("#type").html('')
+		$("#detail-type").html('')
+	}
+}
 
 // 달력처리
 $("#start-date").datepicker({
@@ -30,6 +36,7 @@ $("#start-date").datepicker({
 	.datepicker(income_list(1))
 // 달력변경
 $(document).on('change', '#start-date', async function() {
+	await offeringSetting()
 	await income_list(1)
 })
 
@@ -98,7 +105,8 @@ $(document).on('keyup', '#name', function(e) {
 					const parent = $('#type option:selected').val()
 					const typeData = {
 						'is-income' : 'Y',
-						'parent'	: parent
+						'parent'	: parent,
+						'year'		: $("#start-date").val()
 					}
 
 					const result = offering_list(typeData);
@@ -189,9 +197,18 @@ $(document).on('keyup', '#etc', function(e) {
 $(document).on('click', '#register-btn', function(e) {
 	e.stopImmediatePropagation()
 
+	const type = $('#detail-type').val()
 	const name = $('#name').val()
 	const price = $('#price').val()
 
+	if (type == '') {
+		Swal.fire({
+			title: '헌금타입을 선택하세요.',
+			icon: 'error',
+			confirmButtonText: '확인'
+		})
+		return
+	}
 	if (name.trim().length == 0) {
 		$('#name').focus()
 		Swal.fire({
@@ -353,7 +370,8 @@ async function detailTypeChange(target) {
 
 	const typeData = {
 		'is-income' : 'Y',
-		'parent'	: parent
+		'parent'	: parent,
+		'year'		: $("#start-date").val()
 	}
 
 	const result = offering_list(typeData);

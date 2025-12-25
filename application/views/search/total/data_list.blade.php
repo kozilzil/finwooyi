@@ -16,7 +16,7 @@
 						<th width="25%">지출</th>
 					</tr>
 					</thead>
-					<tbody>
+					<tbody id="total-list-body">
 					@if (count($data) > 0)
 						@foreach($data as $idx => $value)
 							<tr>
@@ -94,6 +94,11 @@
 									<td>
 										<h6>{{ number_format($value['total-expense']) }}원</h6>
 									</td>
+								</tr>
+							@endif
+							@if ($value['CHILD_TITLE'] == '차년도 이월금' && ((int)$value['PRICE'] !== 0 || ((int)$value['total-income'] - (int)$value['total-expense'] == 0)))
+								<tr>
+									<td colspan="5" style="padding: 0px;border-bottom-color: red;border-bottom-style: double;border-bottom-width: medium;"></td>
 								</tr>
 							@endif
 						@endforeach

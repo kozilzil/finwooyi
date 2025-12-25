@@ -72,7 +72,30 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 */
 $active_group = 'db_session';
 $query_builder = TRUE;
-
+/*
+$db['db_session'] = array(
+	'dsn'	=> '',
+	'hostname' => 'wooyi.iptime.org',
+	'username' => 'root',
+	'password' => 'mariadb_password',
+	'database' => 'WOOYI_FINANCE',
+	'dbdriver' => 'mysqli',
+	'dbprefix' => '',
+	'pconnect' => FALSE,
+	'db_debug' => true,
+	'cache_on' => FALSE,
+	'cachedir' => '',
+	'char_set' => 'utf8',
+	'dbcollat' => 'utf8_general_ci',
+	'swap_pre' => '',
+	'encrypt' => FALSE,
+	'compress' => FALSE,
+	'stricton' => FALSE,
+	'failover' => array(),
+	'save_queries' => TRUE,
+	'port'	=> '33306'
+);
+*/
 $db['db_session'] = array(
 	'dsn'	=> '',
 	'hostname' => getenv('db_session.hostname'),
