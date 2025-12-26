@@ -54,7 +54,7 @@
  */
 	//define('ENVIRONMENT', isset($_SERVER['CI_ENV']) ? $_SERVER['CI_ENV'] : 'development');
 	define('ENVIRONMENT', 'development');
-
+	ob_start(); // 이 줄 추가
 /*
  *---------------------------------------------------------------
  * ERROR REPORTING

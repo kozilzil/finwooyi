@@ -1,0 +1,63 @@
+version: '3.7'
+
+services:
+  # 웹 애플리케이션
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: finwooyi_web
+    ports:
+      - "5000:80"
+    volumes:
+      - .:/var/www/html
+      - ./application/logs:/var/www/html/application/logs
+    environment:
+      - APACHE_DOCUMENT_ROOT=/var/www/html
+    depends_on:
+      - db
+    networks:
+      - finwooyi_network
+    restart: unless-stopped
+
+  # MySQL 데이터베이스
+  db:
+    image: mysql:8.0
+    container_name: finwooyi_db
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: finwooyi_db
+      MYSQL_USER: finwooyi_user
+      MYSQL_PASSWORD: finwooyi_pass
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - finwooyi_network
+    restart: unless-stopped
+
+  # phpMyAdmin (데이터베이스 관리용 - 선택사항)
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: finwooyi_phpmyadmin
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_USER: finwooyi_user
+      PMA_PASSWORD: finwooyi_pass
+    depends_on:
+      - db
+    networks:
+      - finwooyi_network
+    restart: unless-stopped
+
+networks:
+  finwooyi_network:
+    driver: bridge
+
+volumes:
+  db_data:
