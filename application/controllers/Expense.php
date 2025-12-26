@@ -6,12 +6,14 @@ require 'vendor/autoload.php';
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
-class Expense extends MY_Controller {
+	class Expense extends MY_Controller {
 	public function __construct(){
 		parent::__construct();
 		if (!$this->loginCheck()) {
 			redirect($this->serverUrl.'/account/index');
 		}
+		// 지출 메뉴 권한으로 제어
+		$this->require_menu_auth_by_url('/expense/write', ['R','W','A']);
 	}
 
 	#region 지출입력
@@ -57,11 +59,11 @@ class Expense extends MY_Controller {
 	/**
 	 * 계좌리스트 View
 	 */
-	public function account() {
-		$posts = $this->input->post();
-		$page = $posts['page'] ?? 1;
-		$nickname = $posts['nickname'] ?? '';
-		$limit = 10;
+		public function account() {
+			$posts = $this->input->post();
+			$page = $posts['page'] ?? 1;
+			$nickname = $posts['nickname'] ?? '';
+			$limit = 50;
 		$this->load->model('Expense_model');
 		$list = $this->Expense_model->accountList([
 			'limit'		=> $limit,
@@ -154,10 +156,10 @@ class Expense extends MY_Controller {
 	/**
 	 * 지출리스트 View
 	 */
-	public function expense_list() {
-		$posts = $this->input->post();
-		$page = $posts['page'] ?? 1;
-		$limit = 10;
+		public function expense_list() {
+			$posts = $this->input->post();
+			$page = $posts['page'] ?? 1;
+			$limit = 50;
 		$this->load->model('Expense_model');
 		$list = $this->Expense_model->expenseList([
 			'limit'	=> $limit,

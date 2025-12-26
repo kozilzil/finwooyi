@@ -1,4 +1,4 @@
-<div id="data-list-div">
+<div id="data-list-div" class="list-scroll">
 	<h6 class="card-title">검색 결과 <span id="list-count" style="color: red">{{ array_key_exists('list', $data) ? (count($data['list']) > 0 ? number_format($data['list'][0]['TOTAL_CNT']) : 0) : '' }}</span></h6>
 	<div class="table-responsive pt-3">
 		<table class="table table-bordered">

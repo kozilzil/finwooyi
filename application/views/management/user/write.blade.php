@@ -292,6 +292,53 @@
 			fnAuthListAfter('view')
 			fnAuthListAfter('update')
 			fnAuthListAfter('admin')
+
+			// 저장 버튼 핸들러 갱신
+			$(document).off('click', '#modal-save-btn').on('click', '#modal-save-btn', function() {
+				const role = $('#role-select').val()
+				const auths = []
+				$("select[id^='auth-parent-'], select[id^='auth-child-']").each(function() {
+					const val = $(this).val()
+					const menuNo = $(this).find('option:selected').data('no')
+					if (val !== '' && menuNo) {
+						auths.push({menu_no: menuNo, auth: val})
+					}
+				})
+
+				$.ajax({
+					url: '/management/user_auth_save',
+					type: 'POST',
+					dataType: 'json',
+					data: {
+						no: userNo,
+						role: role,
+						auths: JSON.stringify(auths)
+					}
+				}).done(function(res) {
+					if (res.status) {
+						Swal.fire({
+							title: '적용되었습니다.',
+							icon: 'success',
+							confirmButtonText: '확인'
+						}).then(() => {
+							$("#auth-modal").modal('hide')
+							location.reload()
+						})
+					} else {
+						Swal.fire({
+							title: '저장에 실패했습니다.',
+							icon: 'error',
+							confirmButtonText: '확인'
+						})
+					}
+				}).fail(function() {
+					Swal.fire({
+						title: '저장 중 오류가 발생했습니다.',
+						icon: 'error',
+						confirmButtonText: '확인'
+					})
+				})
+			})
 		})
 	})
 	function fnAuthListAfter(type) {
@@ -473,4 +520,3 @@
 
 	})
 </script>
-

@@ -28,7 +28,8 @@ class User_model extends CI_Model {
 	public function auth_list($param) {
 		$sql = "
 			SELECT  NO,
-			       	MENU_NO
+			       	MENU_NO,
+			        AUTH
 			  FROM  TB_MENU_AUTH
 			 WHERE	USER_NO = {$param['no']}
 		";
@@ -38,6 +39,35 @@ class User_model extends CI_Model {
 			->result_Array();
 
 		return $result;
+	}
+
+	/**
+	 * URL로 메뉴 번호 조회
+	 */
+	public function menu_no_by_url($url) {
+		$sql = "
+			SELECT NO
+			  FROM TB_MENU
+			 WHERE URL = '{$url}'
+			 LIMIT 1
+		";
+		$row = $this->db->query($sql)->row_array();
+		return $row['NO'] ?? null;
+	}
+
+	/**
+	 * 사용자 메뉴 권한 조회
+	 */
+	public function user_auth($userNo, $menuNo) {
+		$sql = "
+			SELECT AUTH
+			  FROM TB_MENU_AUTH
+			 WHERE USER_NO = {$userNo}
+			   AND MENU_NO = {$menuNo}
+			 LIMIT 1
+		";
+		$row = $this->db->query($sql)->row_array();
+		return $row['AUTH'] ?? '';
 	}
 
 	/**
@@ -192,7 +222,8 @@ class User_model extends CI_Model {
                         OFFICE,
                         REG_DATE,
                         EXPLANATION,
-                        IS_DELETE
+                        IS_DELETE,
+                        ROLE
                   FROM  TB_USER
                  WHERE  IS_DELETE = 'N'
                 ";
@@ -225,10 +256,10 @@ class User_model extends CI_Model {
 	 */
 	public function user_register($params) {
 		$sql = "
-			INSERT INTO TB_USER
-			(
-			 	NAME
-			 ";
+				INSERT INTO TB_USER
+				(
+				 	NAME
+				 ";
 		if ( array_key_exists('id', $params) ) {
 			$sql .= "
 				,ID
@@ -249,13 +280,14 @@ class User_model extends CI_Model {
 				,PASSWORD
 				";
 		}
-		$sql .= "
-				,REG_DATE
-				,IS_DELETE
-			)
-			VALUES
-			(
-				'{$params['name']}'
+			$sql .= "
+					,REG_DATE
+					,IS_DELETE
+					,ROLE
+				)
+				VALUES
+				(
+					'{$params['name']}'
 			";
 		if ( array_key_exists('id', $params) ) {
 			$sql .= "
@@ -277,11 +309,12 @@ class User_model extends CI_Model {
 				,'{$params['password']}'
 				";
 		}
-		$sql .= "
-				,date_format(current_timestamp(), '%Y-%m-%d')
-				,'N'
-			)
-			";
+			$sql .= "
+					,date_format(current_timestamp(), '%Y-%m-%d')
+					,'N'
+					,".(array_key_exists('role', $params) ? $params['role'] : 4)."
+				)
+				";
 		$this->db->query($sql);
 
 		$result = $this->db
@@ -316,14 +349,15 @@ class User_model extends CI_Model {
 		}
 
 		$sql = "
-                UPDATE  TB_USER
-                   SET  ID          = '{$params['id']}', 
-                        NAME        = '{$params['name']}',
-                        PASSWORD    = '{$params['password']}',
-                        OFFICE      = '{$params['office']}',
-                        EXPLANATION = '{$params['explanation']}'                    
-                 WHERE  NO = {$params['no']} 
-                ";
+	                UPDATE  TB_USER
+	                   SET  ID          = '{$params['id']}', 
+	                        NAME        = '{$params['name']}',
+	                        PASSWORD    = '{$params['password']}',
+	                        OFFICE      = '{$params['office']}',
+	                        EXPLANATION = '{$params['explanation']}',
+	                        ROLE        = ".(array_key_exists('role', $params) ? $params['role'] : 'ROLE')."                    
+	                 WHERE  NO = {$params['no']} 
+	                ";
 
 		$result = $this->db->query($sql);
 
@@ -369,5 +403,43 @@ class User_model extends CI_Model {
 			->row_array();
 
 		return $result;
+	}
+
+	/**
+	 * 역할(권한 등급) 업데이트
+	 * @param int $userNo
+	 * @param int $role
+	 * @return mixed
+	 */
+	public function set_role($userNo, $role) {
+		$sql = "
+			UPDATE TB_USER
+			   SET ROLE = {$role}
+			 WHERE NO = {$userNo}
+		";
+		return $this->db->query($sql);
+	}
+
+	/**
+	 * 사용자 메뉴 권한 저장 (기존 삭제 후 재삽입)
+	 * @param int $userNo
+	 * @param array $auths [['menu_no'=>int,'auth'=>'R/W/A'], ...]
+	 */
+	public function save_menu_auth($userNo, $auths) {
+		$this->db->trans_start();
+		$this->db->query("DELETE FROM TB_MENU_AUTH WHERE USER_NO = {$userNo}");
+		foreach ($auths as $item) {
+			$menuNo = (int)$item['menu_no'];
+			$auth = $item['auth'];
+			if ($menuNo > 0 && in_array($auth, ['R','W','A'], true)) {
+				$sql = "
+					INSERT INTO TB_MENU_AUTH (MENU_NO, USER_NO, AUTH)
+					VALUES ({$menuNo}, {$userNo}, '{$auth}')
+				";
+				$this->db->query($sql);
+			}
+		}
+		$this->db->trans_complete();
+		return $this->db->trans_status();
 	}
 }

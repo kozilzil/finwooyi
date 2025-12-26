@@ -1,7 +1,7 @@
 <div class="main-panel">
 	<div class="content-wrapper">
 		<div class="row">
-			<div class="col-md-4 grid-margin stretch-card">
+			<div class="col-md-4 grid-margin stretch-card sticky-panel">
 				<div class="card">
 					<div class="card-body">
 						<input type="button" class="btn btn-sm btn-primary" id="fixed-select" value="고정지출" style="position:absolute;right: 20px">
@@ -69,7 +69,7 @@
 			<div class="col-md-8 grid-margin stretch-card">
 				<div class="card card-rounded">
 					<div class="card-body">
-						<div class="table-responsive mt-1" id="data-list-div">
+					<div class="table-responsive mt-1 list-scroll" id="data-list-div">
 
 						</div>
 					</div>

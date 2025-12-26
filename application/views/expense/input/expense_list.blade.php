@@ -1,3 +1,9 @@
+git @php
+    $registrants = $data['registrants'] ?? [];
+    $totalCnt = $registrants[0]['TOTAL_CNT'] ?? 0;
+    $totalPrice = $registrants[0]['TOTAL_PRICE'] ?? 0;
+@endphp
+
 <div class="col-12 grid-margin stretch-card">
 	<div class="card card-rounded">
 		<div class="card-body">
@@ -6,7 +12,7 @@
 					<thead>
 					<tr>
 						<th colspan="8" class="text-dark">
-							<h5>합계 : {{ number_format($data['registrants'][0]['TOTAL_PRICE']) }}</h5>
+							<h5>합계 : {{ number_format($totalPrice) }}</h5>
 						</th>
 					</tr>
 					<tr>
@@ -21,39 +27,39 @@
 					</tr>
 					</thead>
 					<tbody>
-					@if ($data['registrants'][0]['TOTAL_CNT'] > 0)
-						@for($idx = 0; $idx < count($data['registrants']); $idx++)
+					@if ($totalCnt > 0)
+						@for($idx = 0; $idx < count($registrants); $idx++)
 							<tr>
 								<td>
 									<div class="form-check-flat mt-0">
-										<a href="/management/user_write/{{ $data['registrants'][$idx]['NO'] }}">{{ $data['registrants'][0]['TOTAL_CNT'] - $idx - (($data['page'] -1) * $data['limit']) }}</a>
+										<a href="/management/user_write/{{ $registrants[$idx]['NO'] }}">{{ $totalCnt - $idx - (($data['page'] -1) * $data['limit']) }}</a>
 									</div>
 								</td>
 								<td>
-									<h6>{{ $data['registrants'][$idx]['OFFERING_TYPE_PARENT_NAME'] }}</h6>
+									<h6>{{ $registrants[$idx]['OFFERING_TYPE_PARENT_NAME'] }}</h6>
 								</td>
 								<td>
-									<h6>{{ $data['registrants'][$idx]['OFFERING_TYPE_NAME'] }}</h6>
+									<h6>{{ $registrants[$idx]['OFFERING_TYPE_NAME'] }}</h6>
 								</td>
 								<td>
-									<h6>{{ number_format($data['registrants'][$idx]['PRICE'], 0) }}</h6>
+									<h6>{{ number_format($registrants[$idx]['PRICE'] ?? 0, 0) }}</h6>
 								</td>
 								<td>
-									<h6>{{ $data['registrants'][$idx]['CONTENTS'] }}</h6>
+									<h6>{{ $registrants[$idx]['CONTENTS'] }}</h6>
 								</td>
 								<td>
-									<h6>{{ $data['registrants'][$idx]['RECIPIENT'] }}</h6>
+									<h6>{{ $registrants[$idx]['RECIPIENT'] }}</h6>
 								</td>
 								<td class="account">
-									@if ( $data['registrants'][$idx]['NICK_NAME'] != '' )
-									<h6>{{ $data['registrants'][$idx]['NICK_NAME'] }}({{ $data['registrants'][$idx]['HOLDER'] }} / {{ $data['registrants'][$idx]['BANK_NAME'] }} / {{ $data['registrants'][$idx]['ACCOUNT'] }})</h6>
+									@if ( $registrants[$idx]['NICK_NAME'] != '' )
+									<h6>{{ $registrants[$idx]['NICK_NAME'] }}({{ $registrants[$idx]['HOLDER'] }} / {{ $registrants[$idx]['BANK_NAME'] }} / {{ $registrants[$idx]['ACCOUNT'] }})</h6>
 									@endif
 								</td>
 								<td>
-									<input type="button" class="btn-sm btn-primary modify-btn" value="수정" data-value="{{ $data['registrants'][$idx]['NO'] }}">
-									<input type="button" class="btn-sm btn-danger delete-btn" value="삭제" data-value="{{ $data['registrants'][$idx]['NO'] }}" data-page="{{ $data['page'] }}" data-count="{{ $data['registrants'][0]['TOTAL_CNT'] }}">
-									<input type="button" class="btn-sm btn-primary modify-complete-btn" value="수정완료" data-value="{{ $data['registrants'][$idx]['NO'] }}" data-page="{{ $data['page'] }}" >
-									<input type="button" class="btn-sm btn-danger cancel-btn" value="취소" data-value="{{ $data['registrants'][$idx]['NO'] }}">
+									<input type="button" class="btn-sm btn-primary modify-btn" value="수정" data-value="{{ $registrants[$idx]['NO'] }}">
+									<input type="button" class="btn-sm btn-danger delete-btn" value="삭제" data-value="{{ $registrants[$idx]['NO'] }}" data-page="{{ $data['page'] }}" data-count="{{ $totalCnt }}">
+									<input type="button" class="btn-sm btn-primary modify-complete-btn" value="수정완료" data-value="{{ $registrants[$idx]['NO'] }}" data-page="{{ $data['page'] }}" >
+									<input type="button" class="btn-sm btn-danger cancel-btn" value="취소" data-value="{{ $registrants[$idx]['NO'] }}">
 								</td>
 							</tr>
 						@endfor

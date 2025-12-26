@@ -24,6 +24,40 @@
 	<link rel="stylesheet" href="/assets/css/vertical-layout-light/style.css">
 	<!-- endinject -->
 	<link rel="shortcut icon" href="/assets/images/favicon.png" />
+	<style>
+		@media (min-width: 992px) {
+			.sidebar {
+				position: sticky;
+				top: 0;
+				height: 100vh;
+				overflow-y: auto;
+			}
+			.sticky-panel {
+				position: sticky;
+				top: 20px;
+			}
+			.list-scroll {
+				max-height: calc(100vh - 220px);
+				overflow-y: auto;
+				overflow-x: auto;
+				padding-bottom: 8px; /* ensure horizontal bar is visible without scrolling 전체 페이지 */
+			}
+		}
+		.brand-text {
+			font-weight: 700;
+			font-size: 20px;
+			color: #1f3bb3;
+			letter-spacing: 0.5px;
+			text-transform: uppercase;
+		}
+		.brand-text-mini {
+			font-weight: 800;
+			font-size: 16px;
+			color: #1f3bb3;
+			letter-spacing: 0.5px;
+			text-transform: uppercase;
+		}
+	</style>
 
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 	<link rel="stylesheet" href="/assets/css/bootstrap-datepicker3.css">
@@ -67,4 +101,3 @@
 	@include('_parts/footer', ['data' => ['data' => $view_data['footer']]])
 </body>
 </html>
-

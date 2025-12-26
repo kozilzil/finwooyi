@@ -45,6 +45,63 @@ class MY_Controller extends CI_Controller {
 		}
 	}
 
+	/**
+	 * 세션에 ROLE이 없으면 DB에서 재조회해 갱신 후 반환
+	 */
+	protected function current_role() {
+		$info = $this->session->userdata('info') ?? [];
+		$no = $info['NO'] ?? null;
+		// 세션에 ROLE이 있고 NO가 없다면 그대로 반환
+		if (!empty($info['ROLE']) && $no === null) {
+			return (int)$info['ROLE'];
+		}
+		if ($no === null) {
+			return 4;
+		}
+		// DB에서 최신 ROLE 조회 후 세션 갱신
+		$this->load->model('User_model');
+		// ROLE 컬럼이 없으면 추가
+		$this->db->query("ALTER TABLE TB_USER ADD COLUMN IF NOT EXISTS ROLE TINYINT NOT NULL DEFAULT 4");
+		$user = $this->User_model->user_info(['no' => $no]);
+		if ($user && array_key_exists('ROLE', $user)) {
+			$info['ROLE'] = (int)$user['ROLE'];
+			$this->session->set_userdata('info', $info);
+			return (int)$user['ROLE'];
+		}
+		return 4;
+	}
+
+	/**
+	 * 최소 권한 체크
+	 * @param array $roles 허용 등급 배열 (1:관리자, 2:재정위원, 3:교역자, 4:일반)
+	 */
+	protected function require_role(array $roles) {
+		$role = $this->current_role();
+		if (!in_array($role, $roles, true)) {
+			show_error('접근 권한이 없습니다.', 403);
+			exit;
+		}
+	}
+
+	/**
+	 * 메뉴 URL 기준 권한 체크 (ROLE 1,2는 통과)
+	 * @param string $url TB_MENU.URL 값 (예: '/offering/write')
+	 * @param array $allowedAuth ['R','W','A']
+	 */
+	protected function require_menu_auth_by_url($url, array $allowedAuth) {
+		$this->load->model('User_model');
+		$menuNo = $this->User_model->menu_no_by_url($url);
+		if ($menuNo === null) {
+			show_error('메뉴 정보가 없습니다.', 403);
+			exit;
+		}
+		$auth = $this->User_model->user_auth($this->session->userdata('info')['NO'], $menuNo);
+		if (!in_array($auth, $allowedAuth, true)) {
+			show_error('접근 권한이 없습니다.', 403);
+			exit;
+		}
+	}
+
 	public function setMenuList() {
 		$this->view_data['menu'] = $this->getMenuList();
 	}

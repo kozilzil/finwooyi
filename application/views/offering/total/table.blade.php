@@ -11,7 +11,7 @@
 								</h4>
 							</div>
 						</div>
-						<div class="table-responsive mt-1" id="data-list-div">
+						<div class="table-responsive mt-1 list-scroll" id="data-list-div">
 
 						</div>
 					</div>

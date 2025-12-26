@@ -12,7 +12,7 @@
 							</div>
 							<button id="excel-down-btn" class="btn btn-primary text-white me-0"><i class="icon-download"></i> 다운로드</button>
 						</div>
-						<div class="table-responsive mt-1" id="data-list-div">
+						<div class="table-responsive mt-1 list-scroll" id="data-list-div">
 
 						</div>
 					</div>

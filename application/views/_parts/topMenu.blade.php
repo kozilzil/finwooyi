@@ -7,10 +7,10 @@
 		</div>
 		<div>
 			<a class="navbar-brand brand-logo" href="/">
-				<img src="/assets/images/logo.svg" alt="logo" />
+				<span class="brand-text">FIN WOOYI</span>
 			</a>
 			<a class="navbar-brand brand-logo-mini" href="/">
-				<img src="/assets/images/logo-mini.svg" alt="logo" />
+				<span class="brand-text-mini">FW</span>
 			</a>
 		</div>
 	</div>

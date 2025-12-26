@@ -8,6 +8,8 @@ class Management extends MY_Controller {
 		if (!$this->loginCheck()) {
 			redirect($this->serverUrl.'/account/index');
 		}
+		// 메뉴 권한으로만 제어 (관리 메뉴 URL 기준)
+		$this->require_menu_auth_by_url('/management/user', ['R','W','A']);
 	}
 
 	/**
@@ -256,12 +258,52 @@ class Management extends MY_Controller {
 	public function auth_data() {
 		$posts = $this->input->post();
 
-		$menuList = $this->getMenuList();
-		$authList = $this->getAuthList($posts);
+		try {
+			$userNo = isset($posts['no']) ? (int)$posts['no'] : 0;
+			if ($userNo <= 0) {
+				show_error('잘못된 사용자입니다.', 400);
+				return;
+			}
 
-		$this->load->library('blade');
-		$this->blade
-			->set_data(['menu' => $menuList, 'auth' => $authList])
-			->render("management/user/modal/auth_data");
+			// ROLE 컬럼이 없으면 생성 (기본 4: 일반)
+			$this->db->query("ALTER TABLE TB_USER ADD COLUMN IF NOT EXISTS ROLE TINYINT NOT NULL DEFAULT 4");
+			// TB_MENU_AUTH AUTH 컬럼 보장
+			$this->db->query("ALTER TABLE TB_MENU_AUTH ADD COLUMN IF NOT EXISTS AUTH CHAR(1) NOT NULL DEFAULT ''");
+
+			// 사용자 정보(ROLE 포함)
+			$this->load->model('User_model');
+			$userInfo = $this->User_model->user_info(['no' => $userNo]);
+
+			$menuList = $this->getMenuList();
+			$authList = $this->getAuthList(['no' => $userNo]);
+
+			$this->load->library('blade');
+			$this->blade
+				->set_data(['menu' => $menuList, 'auth' => $authList, 'user_role' => $userInfo['ROLE'] ?? 4])
+				->render("management/user/modal/auth_data");
+		} catch (\Throwable $e) {
+			@file_put_contents(APPPATH.'logs/auth_error.log', date('c').' '.$e->getMessage().PHP_EOL.$e->getTraceAsString().PHP_EOL, FILE_APPEND);
+			show_error('권한 정보를 불러오는 중 오류가 발생했습니다.', 500);
+		}
+	}
+
+	/**
+	 * 사용자 ROLE 및 메뉴 권한 저장
+	 */
+	public function user_auth_save() {
+		$posts = $this->input->post();
+		$userNo = (int)$posts['no'];
+		$role = (int)$posts['role'];
+		$authJson = $posts['auths'] ?? '[]';
+		$auths = json_decode($authJson, true);
+
+		// ROLE 컬럼 보장
+		$this->db->query("ALTER TABLE TB_USER ADD COLUMN IF NOT EXISTS ROLE TINYINT NOT NULL DEFAULT 4");
+		$this->db->query("ALTER TABLE TB_MENU_AUTH ADD COLUMN IF NOT EXISTS AUTH CHAR(1) NOT NULL DEFAULT ''");
+
+		$this->load->model('User_model');
+		$roleResult = $this->User_model->set_role($userNo, $role);
+		$authResult = $this->User_model->save_menu_auth($userNo, is_array($auths) ? $auths : []);
+		echo json_encode(['status' => ($roleResult && $authResult)]);
 	}
 }

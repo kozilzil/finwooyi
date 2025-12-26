@@ -22,15 +22,15 @@ services:
 
   # MySQL 데이터베이스
   db:
-    image: mysql:8.0
+    image: mariadb:10.6
     container_name: finwooyi_db
     ports:
       - "3306:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: finwooyi_db
-      MYSQL_USER: finwooyi_user
-      MYSQL_PASSWORD: finwooyi_pass
+      MARIADB_ROOT_PASSWORD: rootpassword
+      MARIADB_DATABASE: finwooyi_db
+      MARIADB_USER: finwooyi_user
+      MARIADB_PASSWORD: finwooyi_pass
     volumes:
       - db_data:/var/lib/mysql
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
