@@ -46,24 +46,6 @@ RUN echo '<VirtualHost *:80>\n\
 # 애플리케이션 파일 복사
 COPY . /var/www/html
 
-# PHP 경고 수정 및 필수 파일 생성
-RUN echo "Fixing PHP issues and creating required files..." && \
-    # 1. auto_detect_line_endings 경고 수정
-    if [ -f system/dotenv/Loader.php ]; then \
-        sed -i "s/ini_set('auto_detect_line_endings', true);/\/\/ ini_set('auto_detect_line_endings', true); \/\/ Deprecated in PHP 8.1+/" system/dotenv/Loader.php; \
-    fi && \
-    # 2. index.php에 output buffering 추가
-    if [ -f index.php ]; then \
-        sed -i '2i\ob_start(); // Start output buffering for session handling' index.php; \
-    fi && \
-    # 3. compress_output 활성화
-    if [ -f application/config/config.php ]; then \
-        sed -i "s/\$config\['compress_output'\] = FALSE;/\$config['compress_output'] = TRUE;/" application/config/config.php; \
-    fi && \
-    # 4. resource.json 파일 생성 (적절한 구조로)
-    echo '{"common":{"css":[],"js":[]},"beforeAssets":{"css":[],"js":[]},"assets":{"css":[],"js":[]},"afterAssets":{"css":[],"js":[]}}' > resource.json && \
-    echo "Fixes applied successfully!"
-
 # 세션 디렉토리 생성 및 권한 설정
 RUN mkdir -p /App/ci_sessions && \
     chmod -R 777 /App/ci_sessions && \
