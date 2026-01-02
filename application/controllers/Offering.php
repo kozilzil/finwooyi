@@ -92,7 +92,7 @@ class Offering extends MY_Controller {
 				// 메뉴 권한 R/W/A 이상이어야 조회 가능
 				$this->require_menu_auth_by_url('/offering/write', ['R','W','A']);
 				$posts = $this->input->post();
-				$page = $posts['page'] ?? 1;
+				$page = isset($posts['page']) ? $posts['page'] : 1;
 				$limit = 50;
 
 		$this->load->model('Income_model');

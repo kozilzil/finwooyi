@@ -1,7 +1,7 @@
-git @php
-    $registrants = $data['registrants'] ?? [];
-    $totalCnt = $registrants[0]['TOTAL_CNT'] ?? 0;
-    $totalPrice = $registrants[0]['TOTAL_PRICE'] ?? 0;
+@php
+    $registrants = isset($data['registrants']) ? $data['registrants'] : [];
+    $totalCnt = isset($registrants[0]['TOTAL_CNT']) ? $registrants[0]['TOTAL_CNT'] : 0;
+    $totalPrice = isset($registrants[0]['TOTAL_PRICE']) ? $registrants[0]['TOTAL_PRICE'] : 0;
 @endphp
 
 <div class="col-12 grid-margin stretch-card">
@@ -42,7 +42,7 @@ git @php
 									<h6>{{ $registrants[$idx]['OFFERING_TYPE_NAME'] }}</h6>
 								</td>
 								<td>
-									<h6>{{ number_format($registrants[$idx]['PRICE'] ?? 0, 0) }}</h6>
+									<h6>{{ number_format(isset($registrants[$idx]['PRICE']) ? $registrants[$idx]['PRICE'] : 0, 0) }}</h6>
 								</td>
 								<td>
 									<h6>{{ $registrants[$idx]['CONTENTS'] }}</h6>

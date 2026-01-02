@@ -16,10 +16,10 @@ class Management extends MY_Controller {
 	 * 성도관리 View
 	 */
 	public function user() {
-		$page = $this->uri->segment(3) ?? 1;
+		$page = $this->uri->segment(3); $page = $page ? $page : 1;
 		$gets = $this->input->get();
-		$type = $gets['type'] ?? '';
-		$content = $gets['content'] ?? '';
+		$type = isset($gets['type']) ? $gets['type'] : '';
+		$content = isset($gets['content']) ? $gets['content'] : '';
 
 		$limit = 10;
 		$params = [
@@ -199,12 +199,12 @@ class Management extends MY_Controller {
 	 * 성도리스트 Data Json
 	 */
 	public function user_list() {
-		$page = $this->uri->segment(3) ?? 1;
+		$page = $this->uri->segment(3); $page = $page ? $page : 1;
 		$gets = $this->input->get();
-		$type = $gets['type'] ?? '';
-		$content = $gets['content'] ?? '';
+		$type = isset($gets['type']) ? $gets['type'] : '';
+		$content = isset($gets['content']) ? $gets['content'] : '';
 
-		$limit = $get['limit'] ?? 10;
+		$limit = isset($get['limit']) ? $get['limit'] : 10;
 		$params = [
 			'page'	=> $page,
 			'limit'	=> $limit,
@@ -222,12 +222,12 @@ class Management extends MY_Controller {
 	 * 성도 등록을 위한 리스트 반환
 	 */
 	public function user_list_for_register() {
-		$page = $this->uri->segment(3) ?? 1;
+		$page = $this->uri->segment(3); $page = $page ? $page : 1;
 		$gets = $this->input->get();
-		$type = $gets['type'] ?? '';
-		$content = $gets['content'] ?? '';
+		$type = isset($gets['type']) ? $gets['type'] : '';
+		$content = isset($gets['content']) ? $gets['content'] : '';
 
-		$limit = $get['limit'] ?? 10;
+		$limit = isset($get['limit']) ? $get['limit'] : 10;
 		$params = [
 			'page'	=> $page,
 			'limit'	=> $limit,
@@ -279,7 +279,7 @@ class Management extends MY_Controller {
 
 			$this->load->library('blade');
 			$this->blade
-				->set_data(['menu' => $menuList, 'auth' => $authList, 'user_role' => $userInfo['ROLE'] ?? 4])
+				->set_data(['menu' => $menuList, 'auth' => $authList, 'user_role' => (isset($userInfo['ROLE']) ? $userInfo['ROLE'] : 4)])
 				->render("management/user/modal/auth_data");
 		} catch (\Throwable $e) {
 			@file_put_contents(APPPATH.'logs/auth_error.log', date('c').' '.$e->getMessage().PHP_EOL.$e->getTraceAsString().PHP_EOL, FILE_APPEND);
@@ -294,7 +294,7 @@ class Management extends MY_Controller {
 		$posts = $this->input->post();
 		$userNo = (int)$posts['no'];
 		$role = (int)$posts['role'];
-		$authJson = $posts['auths'] ?? '[]';
+		$authJson = isset($posts['auths']) ? $posts['auths'] : '[]';
 		$auths = json_decode($authJson, true);
 
 		// ROLE 컬럼 보장

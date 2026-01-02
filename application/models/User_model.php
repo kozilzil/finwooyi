@@ -52,7 +52,7 @@ class User_model extends CI_Model {
 			 LIMIT 1
 		";
 		$row = $this->db->query($sql)->row_array();
-		return $row['NO'] ?? null;
+		return isset($row['NO']) ? $row['NO'] : null;
 	}
 
 	/**
@@ -67,7 +67,7 @@ class User_model extends CI_Model {
 			 LIMIT 1
 		";
 		$row = $this->db->query($sql)->row_array();
-		return $row['AUTH'] ?? '';
+		return isset($row['AUTH']) ? $row['AUTH'] : '';
 	}
 
 	/**

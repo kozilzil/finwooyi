@@ -1,7 +1,7 @@
 @php
-    $registrants = $data['registrants'] ?? [];
-    $page = $data['page'] ?? 1;
-    $limit = $data['limit'] ?? 0;
+    $registrants = isset($data['registrants']) ? $data['registrants'] : [];
+    $page = isset($data['page']) ? $data['page'] : 1;
+    $limit = isset($data['limit']) ? $data['limit'] : 0;
 @endphp
 
 <div class="col-12 grid-margin stretch-card">
@@ -12,7 +12,7 @@
 						<thead>
 						<tr>
 							<th colspan="8" class="text-dark">
-								<h5>합계 : {{ number_format($registrants[0]['TOTAL_PRICE'] ?? 0) }}</h5>
+								<h5>합계 : {{ number_format(isset($registrants[0]['TOTAL_PRICE']) ? $registrants[0]['TOTAL_PRICE'] : 0) }}</h5>
 							</th>
 						</tr>
 						<tr>
@@ -27,19 +27,19 @@
 					</tr>
 							</thead>
 							<tbody>
-							@if (($registrants[0]['TOTAL_CNT'] ?? 0) > 0)
+							@if ((isset($registrants[0]['TOTAL_CNT']) ? $registrants[0]['TOTAL_CNT'] : 0) > 0)
 								@for($idx = 0; $idx < count($registrants); $idx++)
 									<tr>
 										<td>
 											<div class="form-check-flat mt-0">
-												<a href="/management/user_write/{{ $registrants[$idx]['NO'] }}">{{ ($registrants[0]['TOTAL_CNT'] ?? 0) - $idx - (($page -1) * $limit) }}</a>
+												<a href="/management/user_write/{{ $registrants[$idx]['NO'] }}">{{ (isset($registrants[0]['TOTAL_CNT']) ? $registrants[0]['TOTAL_CNT'] : 0) - $idx - (($page -1) * $limit) }}</a>
 											</div>
 										</td>
 									<td class="user-name">
 										<h6>{{ $registrants[$idx]['USER_NAME'] }}</h6>
 									</td>
 									<td class="price">
-										<h6>{{ number_format($registrants[$idx]['PRICE'] ?? 0, 0) }}</h6>
+										<h6>{{ number_format(isset($registrants[$idx]['PRICE']) ? $registrants[$idx]['PRICE'] : 0, 0) }}</h6>
 									</td>
 									<td class="offering-type-parent-name">
 										<h6>{{ $registrants[$idx]['OFFERING_TYPE_PARENT_NAME'] }}</h6>
@@ -55,7 +55,7 @@
 									</td>
 									<td>
 										<input type="button" class="btn-sm btn-primary modify-btn" value="수정" data-value="{{ $registrants[$idx]['NO'] }}">
-										<input type="button" class="btn-sm btn-danger delete-btn" value="삭제" data-value="{{ $registrants[$idx]['NO'] }}" data-page="{{ $page }}" data-count="{{ $registrants[0]['TOTAL_CNT'] ?? 0 }}">
+										<input type="button" class="btn-sm btn-danger delete-btn" value="삭제" data-value="{{ $registrants[$idx]['NO'] }}" data-page="{{ $page }}" data-count="{{ isset($registrants[0]['TOTAL_CNT']) ? $registrants[0]['TOTAL_CNT'] : 0 }}">
 										<input type="button" class="btn-sm btn-primary modify-complete-btn" value="수정완료" data-value="{{ $registrants[$idx]['NO'] }}" data-page="{{ $page }}" >
 										<input type="button" class="btn-sm btn-danger cancel-btn" value="취소" data-value="{{ $registrants[$idx]['NO'] }}">
 									</td>

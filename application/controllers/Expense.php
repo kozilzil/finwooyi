@@ -61,8 +61,8 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 	 */
 		public function account() {
 			$posts = $this->input->post();
-			$page = $posts['page'] ?? 1;
-			$nickname = $posts['nickname'] ?? '';
+			$page = isset($posts['page']) ? $posts['page'] : 1;
+			$nickname = isset($posts['nickname']) ? $posts['nickname'] : '';
 			$limit = 50;
 		$this->load->model('Expense_model');
 		$list = $this->Expense_model->accountList([
@@ -158,7 +158,7 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 	 */
 		public function expense_list() {
 			$posts = $this->input->post();
-			$page = $posts['page'] ?? 1;
+			$page = isset($posts['page']) ? $posts['page'] : 1;
 			$limit = 50;
 		$this->load->model('Expense_model');
 		$list = $this->Expense_model->expenseList([
@@ -279,10 +279,10 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 	 */
 	function _fixedData($count) {
 		$posts = $this->input->post();
-		$page = $posts['page'] ?? 1;
+			$page = isset($posts['page']) ? $posts['page'] : 1;
 		$year = $posts['year'];
-		$contents = $posts['contents'] ?? '';
-		$weekly = $posts['weekly'] ?? '';
+		$contents = isset($posts['contents']) ? $posts['contents'] : '';
+		$weekly = isset($posts['weekly']) ? $posts['weekly'] : '';
 		$limit = $count;
 		$this->load->model('Expense_model');
 		$list = $this->Expense_model->fixedList([

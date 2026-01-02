@@ -49,15 +49,12 @@ class MY_Controller extends CI_Controller {
 	 * 세션에 ROLE이 없으면 DB에서 재조회해 갱신 후 반환
 	 */
 	protected function current_role() {
-		$info = $this->session->userdata('info') ?? [];
-		$no = $info['NO'] ?? null;
+		$info = $this->session->userdata('info');
+		if (!is_array($info)) { $info = []; }
+		$no = array_key_exists('NO', $info) ? $info['NO'] : null;
 		// 세션에 ROLE이 있고 NO가 없다면 그대로 반환
-		if (!empty($info['ROLE']) && $no === null) {
-			return (int)$info['ROLE'];
-		}
-		if ($no === null) {
-			return 4;
-		}
+		if (!empty($info['ROLE']) && $no === null) { return (int)$info['ROLE']; }
+		if ($no === null) { return 4; }
 		// DB에서 최신 ROLE 조회 후 세션 갱신
 		$this->load->model('User_model');
 		// ROLE 컬럼이 없으면 추가

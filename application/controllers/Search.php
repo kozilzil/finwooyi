@@ -227,8 +227,8 @@ class Search extends MY_Controller {
 		$posts = $this->input->post();
 		$params = [
 			'year'	=> $posts['year'],
-			'pre'	=> $posts['pre'] ?? 0,
-			'next'	=> $posts['next'] ?? 0
+			'pre'	=> isset($posts['pre']) ? $posts['pre'] : 0,
+			'next'	=> isset($posts['next']) ? $posts['next'] : 0
 		];
 		$this->load->model('Search_model');
 		$data = $this->Search_model->getCarryover($params);
@@ -695,10 +695,10 @@ class Search extends MY_Controller {
 	 * 기부금영수증 View
 	 */
 	public function donation() {
-		$page = $this->uri->segment(3) ?? 1;
+		$page = $this->uri->segment(3); $page = $page ? $page : 1;
 		$gets = $this->input->get();
-		$type = $gets['type'] ?? '';
-		$content = $gets['content'] ?? '';
+		$type = isset($gets['type']) ? $gets['type'] : '';
+		$content = isset($gets['content']) ? $gets['content'] : '';
 
 		$limit = 10;
 		$params = [
