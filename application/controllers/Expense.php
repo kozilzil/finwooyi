@@ -12,8 +12,6 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 		if (!$this->loginCheck()) {
 			redirect($this->serverUrl.'/account/index');
 		}
-		// 지출 메뉴 권한으로 제어
-		$this->require_menu_auth_by_url('/expense/write', ['R','W','A']);
 	}
 
 	#region 지출입력

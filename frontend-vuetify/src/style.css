@@ -1,0 +1,6 @@
+@import 'vuetify/styles';
+
+body {
+  margin: 0;
+  font-family: 'Noto Sans KR', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}

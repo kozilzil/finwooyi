@@ -21,8 +21,6 @@ class Offering extends MY_Controller {
 	 * 헌금등록 View
 	 */
 	public function write() {
-		// 헌금 입력 화면: R/W/A 모두 접근 허용
-		$this->require_menu_auth_by_url('/offering/write', ['R','W','A']);
 		$this->setBeforeAssets();
 		$this->setAssets('offering', 'write');
 		$this->setAfterAssets();
@@ -58,7 +56,6 @@ class Offering extends MY_Controller {
 	 * 헌금등록
 	 */
 	public function offering_register() {
-		$this->require_menu_auth_by_url('/offering/write', ['W','A']);
 		$posts = $this->input->post();
 
 		$this->load->model('User_model');
@@ -89,8 +86,6 @@ class Offering extends MY_Controller {
 	 * 헌금 리스트
 	 */
 	public function income_list() {
-				// 메뉴 권한 R/W/A 이상이어야 조회 가능
-				$this->require_menu_auth_by_url('/offering/write', ['R','W','A']);
 				$posts = $this->input->post();
 				$page = isset($posts['page']) ? $posts['page'] : 1;
 				$limit = 50;
@@ -157,7 +152,6 @@ class Offering extends MY_Controller {
 	 * 헌금 삭제
 	 */
 	public function offering_delete() {
-		$this->require_menu_auth_by_url('/offering/write', ['W','A']);
 		$posts = $this->input->post();
 		if (!array_key_exists('no', $posts)) {
 			echo json_encode(['status' => false]);
@@ -173,7 +167,6 @@ class Offering extends MY_Controller {
 	 * 헌금 수정
 	 */
 	public function offering_update() {
-		$this->require_menu_auth_by_url('/offering/write', ['W','A']);
 		$posts = $this->input->post();
 
 		$this->load->model('User_model');

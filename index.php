@@ -35,6 +35,27 @@
  * @since	Version 1.0.0
  * @filesource
  */
+
+// ---------------------------------------------------------------
+// CORS (allow Vue frontend on localhost:3000)
+// ---------------------------------------------------------------
+if (isset($_SERVER['HTTP_ORIGIN'])) {
+	$origin = $_SERVER['HTTP_ORIGIN'];
+	$allowed = [
+		'http://127.0.0.1:3000',
+		'http://localhost:3000'
+	];
+	if (in_array($origin, $allowed, true)) {
+		header("Access-Control-Allow-Origin: {$origin}");
+		header("Access-Control-Allow-Credentials: true");
+		header('Access-Control-Allow-Headers: Content-Type, X-Requested-With, Authorization');
+		header('Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE');
+		if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+			exit; // preflight
+		}
+	}
+}
+
 /*
  *---------------------------------------------------------------
  * APPLICATION ENVIRONMENT

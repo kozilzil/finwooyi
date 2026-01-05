@@ -5,7 +5,7 @@ $(document).ready(function (e) {
 	const typeData = {
 		'is-income' : 'Y',
 		'parent'	: 0,
-		'year'		: $("start-date").val()
+		'year'		: $("#start-date").val()
 	}
 	const result = offering_list(typeData);
 	result.then(async (resolve) => {
@@ -97,11 +97,11 @@ $(document).on('keyup', '#name', function(e) {
 				if (resolve.status == true) {
 					$("#type").val(resolve.data.PARENT_NO).prop("selected", true)
 					const parent = $('#type option:selected').val()
-					const typeData = {
-						'is-income' : 'Y',
-						'parent'	: parent,
-						'year'		: $("#start-date").val()
-					}
+			const typeData = {
+				'is-income' : 'Y',
+				'parent'	: parent,
+				'year'		: $("#start-date").val()
+			}
 
 					const result = offering_list(typeData);
 					result.then((resolve) => {

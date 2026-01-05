@@ -8,8 +8,6 @@ class Management extends MY_Controller {
 		if (!$this->loginCheck()) {
 			redirect($this->serverUrl.'/account/index');
 		}
-		// 메뉴 권한으로만 제어 (관리 메뉴 URL 기준)
-		$this->require_menu_auth_by_url('/management/user', ['R','W','A']);
 	}
 
 	/**
